@@ -19,7 +19,8 @@ struct Guide: View {
                 .padding()
             
             NavigationLink(destination: {
-                PracticeView()
+//                PracticeView()
+                QuizView()
             }, label: {
                 HStack {
                     Image(systemName: "chevron.right")

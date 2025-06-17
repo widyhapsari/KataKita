@@ -9,8 +9,11 @@ import SwiftUI
 
 struct Welcome: View {
     var body: some View {
-        VStack {
-            // Welcome Box
+        ZStack {
+            Image("sign")
+                .resizable()
+                .frame(width: 360, height: 180)
+            
             VStack(spacing: 8) {
                 Text("Welcome to KataKita")
                     .font(.title)
@@ -24,12 +27,10 @@ struct Welcome: View {
                     .font(.subheadline)
                     .foregroundColor(.gray)
             }
-            .padding()
-            .frame(maxWidth: .infinity)
-            .background(Color.white)
-            .cornerRadius(12)
         }
-        .padding(.horizontal)
-        .padding(.top)
     }
+}
+
+#Preview {
+    Welcome()
 }

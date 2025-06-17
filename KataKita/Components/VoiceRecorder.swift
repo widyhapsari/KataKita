@@ -8,10 +8,13 @@
 import SwiftUI
 
 struct VoiceRecorder: View {
+    var speechManager: speechRecognitionManager
+    var viewModel: QuizViewModel
+    
     var body: some View {
         VStack {
             Button {
-                
+                speechManager.startRecording()
             } label: {
                 Image(systemName: "microphone")
                     .resizable()
@@ -22,6 +25,7 @@ struct VoiceRecorder: View {
                     .background(.black)
                     .cornerRadius(.infinity)
             }
+            .disabled(!speechManager.hasPermission)
         }
         .padding()
         .frame(maxWidth: .infinity)
@@ -30,5 +34,5 @@ struct VoiceRecorder: View {
 }
 
 #Preview {
-    VoiceRecorder()
+//    VoiceRecorder
 }

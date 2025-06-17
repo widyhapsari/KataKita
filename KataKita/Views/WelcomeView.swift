@@ -8,15 +8,30 @@
 import SwiftUI
 
 struct WelcomeView: View {
+    @ObservedObject var viewModel: WelcomeViewModel = WelcomeViewModel()
+    
     var body: some View {
-        VStack {
-            Welcome()
-            
-            LessonPreview()
-                .padding()
+        switch viewModel.state {
+        case .loading:
+            LoadingView()
+        case .loaded:
+            ZStack {
+                Rectangle()
+                    .foregroundStyle(Color("B1E5FD"))
+                    .ignoresSafeArea()
+                
+                VStack {
+                    Welcome()
+                    
+                    LessonPreview()
+                        .environmentObject(viewModel)
+                }
+            }
+        case .error(let error):
+            ErrorView(error: error, onRetry: {
+                print("Button pressed!")
+            })
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(.cyan)
     }
 }
 

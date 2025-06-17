@@ -7,7 +7,7 @@
 import SwiftUI
 
 struct WordNodes: View {
-    let words: [Word] = [
+    let iWords: [Word] = [
         Word(romaji: "Sumimasen,", kana: "すみません"),
         Word(romaji: "Kono", kana: "この"),
         Word(romaji: "ryōri", kana: "料理"),
@@ -30,7 +30,7 @@ struct WordNodes: View {
                 .foregroundStyle(.gray)
             
             LazyVGrid(columns: columns, alignment: .leading, spacing: 12) {
-                ForEach(words, id: \.romaji) { word in
+                ForEach(iWords, id: \.romaji) { word in
                     WordBox(romaji: word.romaji, kana: word.kana)
                 }
             }

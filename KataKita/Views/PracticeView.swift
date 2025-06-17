@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct PracticeView: View {
+//    @StateObject private var classifier = SoundClassifier()
+    
     var value: Double {
         return 1/3
     }
@@ -32,11 +34,12 @@ struct PracticeView: View {
         VStack {
             WordNodes()
             
-            VoiceRecorder()
+//            VoiceRecorder()
         }
     }
 }
 
 #Preview {
     PracticeView()
+        
 }

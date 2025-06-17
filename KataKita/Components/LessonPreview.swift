@@ -8,99 +8,86 @@
 import SwiftUI
 
 struct LessonPreview: View {
+    @EnvironmentObject var viewModel: WelcomeViewModel
+    
+    let vocabs: [Vocab] = [
+        Vocab(name: "ebi", image: "alcohol", nihongo: "エビ", english: "shrimp", audio_name: "shrimp.mp3"),
+        Vocab(name: "kani", image: "pork", nihongo: "カニ", english: "crab", audio_name: "crab.mp3"),
+    ]
+    
+    let columns = [
+        GridItem(.flexible()),
+        GridItem(.flexible())
+    ]
+    
     var body: some View {
-        VStack (spacing: 20) {
-            Text("Conversation 1")
-                .font(.title)
-                .foregroundStyle(.cyan)
-                .fontWeight(.bold)
-            
-            VStack (spacing: 20) {
-                Text("Practice asking about ingredients and stating your dietary needs")
-                    .font(.body)
-                    .fontWeight(.semibold)
-                    .multilineTextAlignment(.center)
-                
-                Text("Get ready, you’ll crush these vocabularies")
-                    .font(.footnote)
-                    .foregroundStyle(.gray)
-                    .fontWeight(.semibold)
-                    .multilineTextAlignment(.center)
+        ZStack (alignment: .bottom) {
+            VStack {
+                Image("kero")
+                    .resizable()
+                    .frame(width: 227, height: 195)
             }
+            .padding()
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             
-            HStack (spacing: 20) {
-                VStack {
-                    Text("arukōru")
-                        .font(.callout)
-                        .fontWeight(.semibold)
-                    
-                    Image("Alcohol")
-                    
-                    Text("すみません")
-                        .font(.footnote)
-                        .foregroundStyle(.gray)
-                        .fontWeight(.semibold)
-                    
-                    Text("alcohol")
-                        .font(.footnote)
-                        .foregroundStyle(.gray)
-                        .fontWeight(.semibold)
-                    
-                    Circle()
-                        .frame(width: 40, height: 40)
-                }
-                .padding()
-                .frame(maxWidth: .infinity)
-                .background(.white)
-                .cornerRadius(12)
-                .shadow(radius: 4)
+            VStack {
+                Text("Conversation 1")
+                    .font(.title)
+                    .foregroundStyle(.cyan)
+                    .fontWeight(.bold)
+                    .padding(.bottom, 5)
                 
-                VStack {
-                    Text("arukōru")
-                        .font(.callout)
+                VStack (spacing: 10) {
+                    Text("Practice asking about ingredients and stating your dietary needs")
+                        .multilineTextAlignment(.center)
+                        .font(.body)
                         .fontWeight(.semibold)
                     
-                    Image("Pork")
-                    
-                    Text("すみません")
+                    Text("Get ready, you’ll crush these vocabularies")
                         .font(.footnote)
                         .foregroundStyle(.gray)
                         .fontWeight(.semibold)
-                    
-                    Text("alcohol")
-                        .font(.footnote)
-                        .foregroundStyle(.gray)
-                        .fontWeight(.semibold)
-                    
-                    Circle()
-                        .frame(width: 40, height: 40)
+                        .multilineTextAlignment(.center)
                 }
-                .padding()
-                .frame(maxWidth: .infinity)
-                .background(.white)
-                .cornerRadius(12)
-                .shadow(radius: 4)
+                .padding(.bottom)
+                
+                LazyVGrid(columns: columns) {
+                    ForEach(vocabs) { vocab in
+                        VocabCard(
+                            name: vocab.name,
+                            image: vocab.image,
+                            nihongo: vocab.nihongo,
+                            english: vocab.english,
+                            audio_name: vocab.audio_name
+                        )
+                        .environmentObject(viewModel)
+                    }
+                }
+                .padding(.bottom, 25)
             }
+            .padding()
+            .frame(maxWidth: .infinity)
+            .background(.white)
+            .cornerRadius(12)
+            .padding(.bottom, 45)
             
             NavigationLink {
                 ScenarioView()
             } label: {
-                VStack {
+                ZStack {
+                    Image("sign")
+                        .resizable()
+                        .frame(maxWidth: .infinity, maxHeight: 60)
+                    
                     Text("Start")
-                        .foregroundStyle(.white)
-                        .fontWeight(.medium)
+                        .font(.title2)
+                        .foregroundStyle(.black)
                 }
                 .padding()
-                .frame(maxWidth: .infinity)
-                .background(.cyan)
-                .cornerRadius(12)
+                .frame(width: 180, alignment: .bottom)
             }
-
         }
-        .padding()
-        .frame(maxWidth: .infinity)
-        .background(.white)
-        .cornerRadius(20)
+        .padding(.horizontal)
     }
 }
 
