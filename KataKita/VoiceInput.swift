@@ -221,9 +221,9 @@ class speechRecognitionManager: NSObject, ObservableObject {
             print("⚠️ Speech recognition timing seems incorrect. Using fallback strategy.")
             useFallbackTiming(mergedSegments: mergedSegments, asset: asset, docs: docs, audioDuration: audioDuration)
         } else {
-            // Handle the combined phrase case
-            if mergedSegments.count == 1 && mergedSegments[0].word == "ありがとうございます" {
-                print("🎯 Detected combined phrase, splitting for analysis")
+            // Handle the combined phrase case with all 7 words
+            if mergedSegments.count == 1 && mergedSegments[0].word == "ありがとうございますエビ抜きってできますか" {
+                print("🎯 Detected full combined phrase, splitting into 7 words for analysis")
                 splitCombinedPhrase(mergedSegments[0], asset: asset, docs: docs, audioDuration: audioDuration)
             } else {
                 // Handle normal segmented words
@@ -237,13 +237,19 @@ class speechRecognitionManager: NSObject, ObservableObject {
 
     private func useFallbackTiming(mergedSegments: [(start: Double, end: Double, word: String)], asset: AVAsset, docs: URL, audioDuration: Double) {
         // Use the full audio duration and split it evenly based on recognized words
-        if mergedSegments.count == 1 && mergedSegments[0].word == "ありがとうございます" {
-            // Split the full audio in half
-            let halfDuration = audioDuration / 2.0
-            let firstPart = (start: 0.0, end: halfDuration, word: "ありがとう")
-            let secondPart = (start: halfDuration, end: audioDuration, word: "ございます")
+        if mergedSegments.count == 1 && mergedSegments[0].word == "ありがとうございますエビ抜きってできますか" {
+            // Split the full audio into 7 equal parts
+            let targetWords = ["ありがとう", "ございます", "エビ", "抜き", "って", "できます", "か"]
+            let wordDuration = audioDuration / Double(targetWords.count)
             
-            let correctedSegments = [firstPart, secondPart]
+            var correctedSegments: [(start: Double, end: Double, word: String)] = []
+            
+            for (index, word) in targetWords.enumerated() {
+                let start = Double(index) * wordDuration
+                let end = start + wordDuration
+                correctedSegments.append((start: start, end: end, word: word))
+            }
+            
             pendingAnalysisCount = correctedSegments.count
             
             for (index, wordGroup) in correctedSegments.enumerated() {
@@ -289,17 +295,24 @@ class speechRecognitionManager: NSObject, ObservableObject {
         }
         
         let totalDuration = actualEnd - actualStart
-        let halfDuration = totalDuration / 2.0
         
         print("🔍 Using timing: \(actualStart)s to \(actualEnd)s (duration: \(totalDuration)s)")
         
-        let firstPart = (start: actualStart, end: actualStart + halfDuration, word: "ありがとう")
-        let secondPart = (start: actualStart + halfDuration, end: actualEnd, word: "ございます")
+        // Define the 7 words we want to extract
+        let targetWords = ["ありがとう", "ございます", "エビ", "抜き", "って", "できます", "か"]
         
-        print("🔍 First part: \(firstPart.start)s to \(firstPart.end)s (\(halfDuration)s)")
-        print("🔍 Second part: \(secondPart.start)s to \(secondPart.end)s (\(halfDuration)s)")
+        // Calculate duration for each word (equal distribution)
+        let wordDuration = totalDuration / Double(targetWords.count)
         
-        let segments = [firstPart, secondPart]
+        var segments: [(start: Double, end: Double, word: String)] = []
+        
+        for (index, word) in targetWords.enumerated() {
+            let wordStart = actualStart + (Double(index) * wordDuration)
+            let wordEnd = wordStart + wordDuration
+            
+            segments.append((start: wordStart, end: wordEnd, word: word))
+            print("🔍 Word \(index + 1): '\(word)' from \(wordStart)s to \(wordEnd)s (\(wordDuration)s)")
+        }
         
         // Set pending analysis count
         pendingAnalysisCount = segments.count
@@ -308,6 +321,7 @@ class speechRecognitionManager: NSObject, ObservableObject {
             exportAndAnalyzeSegment(wordGroup, index: index, asset: asset, docs: docs, audioDuration: audioDuration)
         }
     }
+
     
     private func processSegments(_ segments: [(start: Double, end: Double, word: String)], asset: AVAsset, docs: URL, audioDuration: Double) {
         // Set pending analysis count
@@ -407,7 +421,7 @@ class speechRecognitionManager: NSObject, ObservableObject {
     }
     
     private func calculateOverallScore() {
-        let targetWords = ["ありがとう", "ございます"]
+        let targetWords = ["ありがとう", "ございます", "エビ", "抜き", "って", "できます", "か"]
         var totalScore = 0.0
         var scoreCount = 0
         
@@ -449,7 +463,7 @@ extension speechRecognitionManager: SNResultsObserving {
         
         print("🎧 ML Result: \(identifier) - Confidence: \(Int(confidence * 100))%")
         
-        // Map ML model output to Japanese words
+        // Map ML model output to Japanese words (expanded for all 7 words)
         var targetWord: String?
         
         // Convert to lowercase for case-insensitive comparison
@@ -459,11 +473,16 @@ extension speechRecognitionManager: SNResultsObserving {
             targetWord = "ありがとう"
         } else if lowerIdentifier.contains("gozaimasu") || lowerIdentifier.contains("ございます") {
             targetWord = "ございます"
-        } else if lowerIdentifier.contains("dekimasu") {
-            // If dekimasu is detected, it might be a misclassification of arigatou
-            // due to poor audio segmentation
-            print("⚠️ Detected 'dekimasu' - this might be a misclassified 'ありがとう' due to audio segmentation issues")
-            targetWord = "ありがとう"  // Map it to arigatou for now
+        } else if lowerIdentifier.contains("ebi") || lowerIdentifier.contains("エビ") {
+            targetWord = "エビ"
+        } else if lowerIdentifier.contains("nuki") || lowerIdentifier.contains("抜き") {
+            targetWord = "抜き"
+        } else if lowerIdentifier.contains("tte") || lowerIdentifier.contains("って") {
+            targetWord = "って"
+        } else if lowerIdentifier.contains("dekimasu") || lowerIdentifier.contains("できます") {
+            targetWord = "できます"
+        } else if lowerIdentifier.contains("ka") || lowerIdentifier.contains("か") {
+            targetWord = "か"
         }
         
         if let word = targetWord {

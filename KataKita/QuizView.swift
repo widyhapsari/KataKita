@@ -14,10 +14,7 @@ struct QuizView: View {
     
     var body: some View {
         VStack(spacing: 32) {
-            // Title
-            Text("Say: Arigatou gozaimasu")
-                .font(.title2)
-                .padding()
+            Spacer()
             
             // Overall Score Display
             if speechManager.overallScore > 0 {
@@ -51,21 +48,68 @@ struct QuizView: View {
             }
             
             // Word cards with individual scores
-            HStack(spacing: 16) {
-                wordCard(
-                    romaji: "Arigatou",
-                    nihongo: "ありがとう",
-                    status: viewModel.wordStatuses["ありがとう"] ?? .neutral,
-                    score: speechManager.pronunciationScores["ありがとう"] ?? 0.0
-                )
+            VStack(spacing: 20) {
+                // Title
+                Text("Ask this to the staff:")
+                    .font(.title3)
+                    .foregroundStyle(Color.gray)
                 
-                wordCard(
-                    romaji: "gozaimasu",
-                    nihongo: "ございます",
-                    status: viewModel.wordStatuses["ございます"] ?? .neutral,
-                    score: speechManager.pronunciationScores["ございます"] ?? 0.0
-                )
+                HStack(spacing: 24) {
+                    wordCard(
+                        romaji: "Arigatou",
+                        nihongo: "ありがとう",
+                        status: viewModel.wordStatuses["ありがとう"] ?? .neutral,
+                        score: speechManager.pronunciationScores["ありがとう"] ?? 0.0
+                    )
+                    
+                    wordCard(
+                        romaji: "gozaimasu.",
+                        nihongo: "ございます.",
+                        status: viewModel.wordStatuses["ございます"] ?? .neutral,
+                        score: speechManager.pronunciationScores["ございます"] ?? 0.0
+                    )
+                    
+                    wordCard(
+                        romaji: "Ebi",
+                        nihongo: "エビ",
+                        status: viewModel.wordStatuses["エビ"] ?? .neutral,
+                        score: speechManager.pronunciationScores["エビ"] ?? 0.0
+                    )
+                }
+                
+                HStack(spacing: 24) {
+                    wordCard(
+                        romaji: "nuki",
+                        nihongo: "抜き",
+                        status: viewModel.wordStatuses["抜き"] ?? .neutral,
+                        score: speechManager.pronunciationScores["抜き"] ?? 0.0
+                    )
+                    
+                    wordCard(
+                        romaji: "tte",
+                        nihongo: "って",
+                        status: viewModel.wordStatuses["って"] ?? .neutral,
+                        score: speechManager.pronunciationScores["って"] ?? 0.0
+                    )
+                    
+                    wordCard(
+                        romaji: "dekimasu",
+                        nihongo: "できます",
+                        status: viewModel.wordStatuses["できます"] ?? .neutral,
+                        score: speechManager.pronunciationScores["できます"] ?? 0.0
+                    )
+                    
+                    wordCard(
+                        romaji: "ka?",
+                        nihongo: "か?",
+                        status: viewModel.wordStatuses["か"] ?? .neutral,
+                        score: speechManager.pronunciationScores["か"] ?? 0.0
+                    )
+                }
+
             }
+            
+
             
             // Recording button
             Button(action: {
@@ -110,6 +154,24 @@ struct QuizView: View {
             }
             
             Spacer()
+            
+            NavigationLink {
+                Feedback()
+            } label: {
+                VStack {
+                    Text("Feedback")
+                        .font(.headline)
+                        .foregroundStyle(.white)
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(.blue)
+                        .cornerRadius(12)
+                    
+                }
+                .padding()
+                .frame(maxWidth: .infinity)
+            }
+
         }
         .padding()
         .onReceive(speechManager.$recognizedText) { text in
@@ -124,6 +186,37 @@ struct QuizView: View {
 #Preview {
     QuizView()
 }
+
+//struct PracticeView: View {
+//    
+//    var value: Double {
+//        return 1/3
+//    }
+//    
+//    var body: some View {
+//        VStack {
+//            ProgressView(value: value)
+//                .padding()
+//            
+//            HStack {
+//                Spacer()
+//                
+//                ConversationBox()
+//            }
+//            
+//            Spacer()
+//            
+//        }
+//        .padding()
+//        .background(Color.gray.opacity(0.1))
+//        
+//        VStack {
+//            WordNodes()
+//            
+//            VoiceRecorder()
+//        }
+//    }
+//}
 
 struct wordCard: View {
     var romaji: String = ""
@@ -149,13 +242,22 @@ struct wordCard: View {
 //    }
     
     var body: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 10) {
             Text(romaji)
                 .font(.system(size: 18, weight: .medium))
-                .foregroundColor(.black)
+                .foregroundColor(borderColor)
+                .background(
+                    GeometryReader { geometry in
+                        Rectangle()
+                            .fill(Color.black)
+                            .frame(width: geometry.size.width + 2, height: 2)
+                            .position(x: geometry.size.width / 2, y: geometry.size.height + 4)
+                    }
+                )
+                
             Text(nihongo)
-                .font(.system(size: 22, weight: .bold))
-                .foregroundColor(.black)
+                .font(.system(size: 14, weight: .bold))
+                .foregroundColor(.gray)
             
             // Individual score display
             if score > 0 {
@@ -173,14 +275,12 @@ struct wordCard: View {
                 .padding(.top, 4)
             }
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
         .background(.white)
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(borderColor, lineWidth: 2)
-                .animation(.easeInOut(duration: 0.3), value: status)
-        )
+//        .overlay(
+//            RoundedRectangle(cornerRadius: 12)
+//                .stroke(borderColor, lineWidth: 2)
+//                .animation(.easeInOut(duration: 0.3), value: status)
+//        )
         .cornerRadius(12)
         .scaleEffect(status == .excellent ? 1.05 : 1.0)
         .animation(.spring(response: 0.3), value: status)

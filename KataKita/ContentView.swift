@@ -11,8 +11,11 @@ struct ContentView: View {
     var body: some View {
         VStack (spacing: 100) {
 //            TTS()
-            QuizView()
+//            QuizView()
 //            TSAButton()
+            NavigationStack {
+                WelcomeView()
+            }
         }
     }
 }
