@@ -10,8 +10,9 @@ import SwiftUI
 
 enum WordStatus {
     case neutral
-    case correct
-    case incorrect
+    case excellent
+    case good
+    case bad
 }
 
 class QuizViewModel: ObservableObject {
@@ -20,10 +21,14 @@ class QuizViewModel: ObservableObject {
         "ございます": .neutral
     ]
     
+    @Published var wordScores: [String: Double] = [
+        "ありがとう": 0.0,
+        "ございます": 0.0
+    ]
+    
     func updateStatuses(from recognizedText: String) {
         print("🔍 Recognized text: '\(recognizedText)'")
         
-        // Don't reset to incorrect immediately - let them stay neutral until we have results
         var updated = wordStatuses
         
         // Check each word in the recognized text
@@ -31,11 +36,11 @@ class QuizViewModel: ObservableObject {
         for word in words {
             // Check if the word appears in recognized text
             if recognizedText.contains(word) {
-                updated[word] = .correct
+                updated[word] = .excellent
                 print("✅ Found: \(word)")
             } else if !recognizedText.isEmpty {
                 // Only mark as incorrect if we have some recognition result
-                updated[word] = .incorrect
+                updated[word] = .bad
                 print("❌ Missing: \(word)")
             }
         }
@@ -43,6 +48,37 @@ class QuizViewModel: ObservableObject {
         // Update the published property on main thread
         DispatchQueue.main.async {
             self.wordStatuses = updated
+        }
+    }
+    
+    func updateScores(from mlScores: [String: Double]) {
+        DispatchQueue.main.async {
+            for (word, score) in mlScores {
+                self.wordScores[word] = score
+                
+                // Update status based on ML confidence
+                if score >= 0.9 {
+                    self.wordStatuses[word] = .excellent
+                } else if score >= 0.7 {
+                    self.wordStatuses[word] = .good
+                } else {
+                    self.wordStatuses[word] = .bad
+                }
+            }
+        }
+    }
+    
+    // Reset function for new attempts
+    func resetStatuses() {
+        DispatchQueue.main.async {
+            self.wordStatuses = [
+                "ありがとう": .neutral,
+                "ございます": .neutral
+            ]
+            self.wordScores = [
+                "ありがとう": 0.0,
+                "ございます": 0.0
+            ]
         }
     }
 }
