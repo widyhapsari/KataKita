@@ -9,8 +9,10 @@ import SwiftUI
 
 struct ContentView: View {
     var body: some View {
-        NavigationStack {
-            CourseView()
+        VStack (spacing: 100) {
+//            TTS()
+            QuizView()
+//            TSAButton()
         }
     }
 }
