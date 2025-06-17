@@ -18,12 +18,22 @@ enum WordStatus {
 class QuizViewModel: ObservableObject {
     @Published var wordStatuses: [String: WordStatus] = [
         "ありがとう": .neutral,
-        "ございます": .neutral
+        "ございます": .neutral,
+        "エビ": .neutral,
+        "抜き": .neutral,
+        "って": .neutral,
+        "言います": .neutral,
+        "か": .neutral
     ]
     
     @Published var wordScores: [String: Double] = [
         "ありがとう": 0.0,
-        "ございます": 0.0
+        "ございます": 0.0,
+        "エビ": 0.0,
+        "抜き": 0.0,
+        "って": 0.0,
+        "言います": 0.0,
+        "か": 0.0
     ]
     
     func updateStatuses(from recognizedText: String) {
@@ -32,7 +42,13 @@ class QuizViewModel: ObservableObject {
         var updated = wordStatuses
         
         // Check each word in the recognized text
-        let words = ["ありがとう", "ございます"]
+        let words = ["ありがとう",
+                    "ございます",
+                    "エビ",
+                    "抜き",
+                    "って",
+                    "言います",
+                    "か"]
         for word in words {
             // Check if the word appears in recognized text
             if recognizedText.contains(word) {
@@ -73,11 +89,21 @@ class QuizViewModel: ObservableObject {
         DispatchQueue.main.async {
             self.wordStatuses = [
                 "ありがとう": .neutral,
-                "ございます": .neutral
+                "ございます": .neutral,
+                "エビ": .neutral,
+                "抜き": .neutral,
+                "って": .neutral,
+                "言います": .neutral,
+                "か": .neutral
             ]
             self.wordScores = [
                 "ありがとう": 0.0,
-                "ございます": 0.0
+                "ございます": 0.0,
+                "エビ": 0.0,
+                "抜き": 0.0,
+                "って": 0.0,
+                "言います": 0.0,
+                "か": 0.0
             ]
         }
     }

@@ -224,7 +224,7 @@ class speechRecognitionManager: NSObject, ObservableObject {
             // Handle the combined phrase case with all 7 words
             if mergedSegments.count == 1 && mergedSegments[0].word == "ありがとうございますエビ抜きってできますか" {
                 print("🎯 Detected full combined phrase, splitting into 7 words for analysis")
-                splitCombinedPhrase(mergedSegments[0], asset: asset, docs: docs, audioDuration: audioDuration)
+                splitCombinedPhraseByNaturalPattern(mergedSegments[0], asset: asset, docs: docs, audioDuration: audioDuration)
             } else {
                 // Handle normal segmented words
                 processSegments(mergedSegments, asset: asset, docs: docs, audioDuration: audioDuration)
@@ -274,47 +274,52 @@ class speechRecognitionManager: NSObject, ObservableObject {
         }
     }
     
-    private func splitCombinedPhrase(_ segment: (start: Double, end: Double, word: String), asset: AVAsset, docs: URL, audioDuration: Double) {
-        // Check if the timing makes sense
-        let recognizedDuration = segment.end - segment.start
-        let timingRatio = recognizedDuration / audioDuration
-        
-        print("🔍 Timing check: recognized=\(recognizedDuration)s, audio=\(audioDuration)s, ratio=\(timingRatio)")
-        
+    private func splitCombinedPhraseByNaturalPattern(_ segment: (start: Double, end: Double, word: String), asset: AVAsset, docs: URL, audioDuration: Double) {
         var actualStart: Double
         var actualEnd: Double
         
-        if timingRatio < 0.1 { // If recognized timing is less than 10% of audio duration
-            print("⚠️ Speech recognition timing seems incorrect. Using full audio duration.")
+        let recognizedDuration = segment.end - segment.start
+        let timingRatio = recognizedDuration / audioDuration
+        
+        if timingRatio < 0.1 {
             actualStart = 0.0
             actualEnd = audioDuration
         } else {
-            print("✅ Using speech recognition timing.")
             actualStart = segment.start
             actualEnd = segment.end
         }
         
         let totalDuration = actualEnd - actualStart
         
-        print("🔍 Using timing: \(actualStart)s to \(actualEnd)s (duration: \(totalDuration)s)")
+        // Natural speech percentages based on typical Japanese pronunciation
+        // These percentages add up to 100%
+        let wordsWithPercentage: [(word: String, percentage: Double)] = [
+            ("ありがとう", 0.28),    // 28% - longest word, greeting emphasis
+            ("ございます", 0.35),    // 22% - formal ending, significant
+            ("エビ", 0.08),         // 8% - short, quick
+            ("抜き", 0.10),         // 10% - short but clear
+            ("って", 0.06),         // 6% - very quick particle
+            ("できます", 0.20),      // 20% - important verb, clear pronunciation
+            ("か", 0.06)           // 6% - quick question particle
+        ]
         
-        // Define the 7 words we want to extract
-        let targetWords = ["ありがとう", "ございます", "エビ", "抜き", "って", "できます", "か"]
-        
-        // Calculate duration for each word (equal distribution)
-        let wordDuration = totalDuration / Double(targetWords.count)
+        // Verify percentages add up to 1.0
+        let totalPercentage = wordsWithPercentage.reduce(0) { $0 + $1.percentage }
+        print("🔍 Total percentage: \(totalPercentage)")
         
         var segments: [(start: Double, end: Double, word: String)] = []
+        var currentTime = actualStart
         
-        for (index, word) in targetWords.enumerated() {
-            let wordStart = actualStart + (Double(index) * wordDuration)
-            let wordEnd = wordStart + wordDuration
+        for wordInfo in wordsWithPercentage {
+            let wordDuration = wordInfo.percentage * totalDuration
+            let wordEnd = currentTime + wordDuration
             
-            segments.append((start: wordStart, end: wordEnd, word: word))
-            print("🔍 Word \(index + 1): '\(word)' from \(wordStart)s to \(wordEnd)s (\(wordDuration)s)")
+            segments.append((start: currentTime, end: wordEnd, word: wordInfo.word))
+            print("🔍 '\(wordInfo.word)' (\(Int(wordInfo.percentage * 100))%): \(currentTime)s to \(wordEnd)s (\(wordDuration)s)")
+            
+            currentTime = wordEnd
         }
         
-        // Set pending analysis count
         pendingAnalysisCount = segments.count
         
         for (index, wordGroup) in segments.enumerated() {
