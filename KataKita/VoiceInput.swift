@@ -13,7 +13,7 @@ class speechRecognitionManager: ObservableObject {
     @Published var recognizedText = ""
     @Published var hasPermission = false
     
-    private let speechRecognizer = SFSpeechRecognizer(locale: Locale(identifier: "id-ID"))
+    private let speechRecognizer = SFSpeechRecognizer(locale: Locale(identifier: "ja-JP"))
     private var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
     private var recognitionTask: SFSpeechRecognitionTask?
     private let audioEngine = AVAudioEngine()
