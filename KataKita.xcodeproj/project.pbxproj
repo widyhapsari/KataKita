@@ -6,15 +6,8 @@
 	objectVersion = 77;
 	objects = {
 
-/* Begin PBXBuildFile section */
-		17C38EE02DFEF9A100C39208 /* KataKitaConvo0.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 17C38EDF2DFEF9A100C39208 /* KataKitaConvo0.mlmodel */; };
-		17C38EE62E00667400C39208 /* Words 1.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 17C38EE52E00667400C39208 /* Words 1.mlmodel */; };
-/* End PBXBuildFile section */
-
 /* Begin PBXFileReference section */
 		17C38EA32DEEAAA100C39208 /* KataKita.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = KataKita.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		17C38EDF2DFEF9A100C39208 /* KataKitaConvo0.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = KataKitaConvo0.mlmodel; sourceTree = "<group>"; };
-		17C38EE52E00667400C39208 /* Words 1.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = "Words 1.mlmodel"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -53,8 +46,6 @@
 			isa = PBXGroup;
 			children = (
 				17C38EA52DEEAAA100C39208 /* KataKita */,
-				17C38EDF2DFEF9A100C39208 /* KataKitaConvo0.mlmodel */,
-				17C38EE52E00667400C39208 /* Words 1.mlmodel */,
 				17C38EA42DEEAAA100C39208 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -141,8 +132,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				17C38EE02DFEF9A100C39208 /* KataKitaConvo0.mlmodel in Sources */,
-				17C38EE62E00667400C39208 /* Words 1.mlmodel in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -276,7 +265,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"KataKita/Preview Content\"";
-				DEVELOPMENT_TEAM = 2K93VBS9VB;
+				DEVELOPMENT_TEAM = 3CRY833KVA;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = KataKita/Info.plist;
@@ -308,7 +297,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"KataKita/Preview Content\"";
-				DEVELOPMENT_TEAM = 2K93VBS9VB;
+				DEVELOPMENT_TEAM = 3CRY833KVA;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = KataKita/Info.plist;

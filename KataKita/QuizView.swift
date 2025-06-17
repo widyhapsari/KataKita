@@ -36,6 +36,24 @@ struct QuizView: View {
                 }
             }
             .disabled(!speechManager.hasPermission)
+            
+            NavigationLink {
+                Feedback()
+            } label: {
+                VStack {
+                    Text("Feedback")
+                        .font(.headline)
+                        .foregroundStyle(.white)
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(.blue)
+                        .cornerRadius(12)
+                    
+                }
+                .padding()
+                .frame(maxWidth: .infinity)
+            }
+
         }
         .onReceive(speechManager.$recognizedText) { text in
             viewModel.updateStatuses(from: text)
@@ -46,6 +64,37 @@ struct QuizView: View {
 #Preview {
     QuizView()
 }
+
+//struct PracticeView: View {
+//    
+//    var value: Double {
+//        return 1/3
+//    }
+//    
+//    var body: some View {
+//        VStack {
+//            ProgressView(value: value)
+//                .padding()
+//            
+//            HStack {
+//                Spacer()
+//                
+//                ConversationBox()
+//            }
+//            
+//            Spacer()
+//            
+//        }
+//        .padding()
+//        .background(Color.gray.opacity(0.1))
+//        
+//        VStack {
+//            WordNodes()
+//            
+//            VoiceRecorder()
+//        }
+//    }
+//}
 
 struct wordCard: View {
     var romaji: String = ""
