@@ -22,7 +22,7 @@ class QuizViewModel: ObservableObject {
         "エビ": .neutral,
         "抜き": .neutral,
         "って": .neutral,
-        "言います": .neutral,
+        "できます": .neutral,
         "か": .neutral
     ]
     
@@ -32,14 +32,21 @@ class QuizViewModel: ObservableObject {
         "エビ": 0.0,
         "抜き": 0.0,
         "って": 0.0,
-        "言います": 0.0,
+        "できます": 0.0,
         "か": 0.0
     ]
+    
+    private var detectedWords: Set<String> = []
     
     func updateStatuses(from recognizedText: String) {
         print("🔍 Recognized text: '\(recognizedText)'")
         
         var updated = wordStatuses
+        
+        guard !recognizedText.isEmpty else {
+            print("⚠️ Empty recognized text, skipping text-based status update")
+            return
+        }
         
         // Check each word in the recognized text
         let words = ["ありがとう",
@@ -47,7 +54,7 @@ class QuizViewModel: ObservableObject {
                     "エビ",
                     "抜き",
                     "って",
-                    "言います",
+                    "できます",
                     "か"]
         for word in words {
             // Check if the word appears in recognized text
@@ -56,7 +63,6 @@ class QuizViewModel: ObservableObject {
                 print("✅ Found: \(word)")
             } else if !recognizedText.isEmpty {
                 // Only mark as incorrect if we have some recognition result
-                updated[word] = .bad
                 print("❌ Missing: \(word)")
             }
         }
@@ -93,7 +99,7 @@ class QuizViewModel: ObservableObject {
                 "エビ": .neutral,
                 "抜き": .neutral,
                 "って": .neutral,
-                "言います": .neutral,
+                "できます": .neutral,
                 "か": .neutral
             ]
             self.wordScores = [
@@ -102,7 +108,7 @@ class QuizViewModel: ObservableObject {
                 "エビ": 0.0,
                 "抜き": 0.0,
                 "って": 0.0,
-                "言います": 0.0,
+                "できます": 0.0,
                 "か": 0.0
             ]
         }

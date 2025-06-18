@@ -295,7 +295,7 @@ class speechRecognitionManager: NSObject, ObservableObject {
         // These percentages add up to 100%
         let wordsWithPercentage: [(word: String, percentage: Double)] = [
             ("ありがとう", 0.28),    // 28% - longest word, greeting emphasis
-            ("ございます", 0.35),    // 22% - formal ending, significant
+            ("ございます", 0.3),    // 22% - formal ending, significant
             ("エビ", 0.08),         // 8% - short, quick
             ("抜き", 0.10),         // 10% - short but clear
             ("って", 0.06),         // 6% - very quick particle
@@ -397,7 +397,7 @@ class speechRecognitionManager: NSObject, ObservableObject {
     func analyzeAudio(at url: URL, for word: String) {
         print("🎯 Starting analysis for: '\(word)'")
         do {
-            let model = try Words_1(configuration: MLModelConfiguration()).model
+            let model = try KataKita_V0(configuration: MLModelConfiguration()).model
             let request = try SNClassifySoundRequest(mlModel: model)
             
             let analyzer = try SNAudioFileAnalyzer(url: url)
@@ -492,13 +492,24 @@ extension speechRecognitionManager: SNResultsObserving {
         
         if let word = targetWord {
             DispatchQueue.main.async {
-                self.pronunciationScores[word] = confidence
-                print("📈 Score for \(word): \(Int(confidence * 100))%")
-                print("📊 Updated scores: \(self.pronunciationScores)")
+                // More explicit check: only update if word doesn't exist OR has a lower confidence
+                let existingScore = self.pronunciationScores[word]
+                
+                if existingScore == nil {
+                    // First detection for this word
+                    self.pronunciationScores[word] = confidence
+                    print("✅ First detection - Score for \(word): \(Int(confidence * 100))%")
+                } else if confidence > existingScore! {
+                    // Only update if new confidence is higher (optional enhancement)
+                    print("📈 Higher confidence found for \(word): \(Int(confidence * 100))% vs \(Int(existingScore! * 100))%")
+                    // Uncomment the line below if you want to allow updates with higher confidence
+                    // self.pronunciationScores[word] = confidence
+                } else {
+                    print("⚠️ Word '\(word)' already detected with score: \(Int(existingScore! * 100))%, current: \(Int(confidence * 100))% - ignoring")
+                }
             }
         } else {
             print("⚠️ No target word mapping found for identifier: \(identifier)")
-            print("🔍 Lowercase identifier: \(lowerIdentifier)")
         }
     }
 
