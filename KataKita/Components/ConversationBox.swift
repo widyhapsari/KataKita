@@ -7,10 +7,31 @@
 
 import SwiftUI
 
+struct staffLine: Identifiable, Hashable {
+    let id: UUID
+    let staffRomaji: String
+    let staffNihongo: String
+    let staffEnglish: String
+
+    init(id: UUID = UUID(), staffRomaji: String, staffNihongo: String, staffEnglish: String) {
+        self.id = id
+        self.staffRomaji = staffRomaji
+        self.staffNihongo = staffNihongo
+        self.staffEnglish = staffEnglish
+    }
+}
+
+let staffLines: [staffLine] = [
+    staffLine(staffRomaji: "Kon'nichiwa. Nani o go chūmon sa remasu ka?", staffNihongo: "こんにちは。何をご注文されますか？", staffEnglish: "Hello, what would you like to order?"),
+    staffLine(staffRomaji: "Eh? Sumimasen, mō ichido ii desu ka?", staffNihongo: "えっ？すみません、もう一度いいですか？", staffEnglish: "Huh? Sorry, could you say that again?")
+    ]
+
 struct ConversationBox: View {
+    let line: staffLine
+    
     var body: some View {
         VStack {
-            Text("Kon'nichiwa. Nani o go chūmon sa remasu ka?")
+            Text(line.staffRomaji)
                 .font(.footnote)
                 .multilineTextAlignment(.center)
             
@@ -33,7 +54,7 @@ struct ConversationBox: View {
 }
 
 #Preview {
-    ConversationBox()
+    ConversationBox(line: staffLines[0])
 }
 
 extension View {
@@ -54,4 +75,8 @@ struct RoundedCorner: Shape {
         )
         return Path(path.cgPath)
     }
+}
+
+struct staffSpeaks1 {
+    
 }

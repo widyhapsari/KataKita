@@ -16,10 +16,10 @@ struct PracticeView: View {
     
     var body: some View {
         ZStack {
-            Group {
                 if step == 0 {
                     VStack {
                         CustomProgressView(value: 0.4)
+                            .padding(.top, 42)
                         
                         ZStack {
                             PracticeBG(waiter: "waiter1")
@@ -28,7 +28,9 @@ struct PracticeView: View {
                                 HStack {
                                     Spacer()
                                     
-                                    ConversationBox()
+                                    if let firstLine = staffLines.first {
+                                        ConversationBox(line: firstLine)
+                                    }
                                 }
                                 Spacer()
                             }
@@ -39,6 +41,7 @@ struct PracticeView: View {
                 } else if step == 1 {
                     VStack {
                         CustomProgressView(value: 0.4)
+                            .padding(.top, 42)
                         
                         ZStack(alignment: .top) {
                             PracticeBG(waiter: "waiter1") // background stays still
@@ -47,7 +50,10 @@ struct PracticeView: View {
                             VStack {
                                 HStack {
                                     Spacer()
-                                    ConversationBox()
+                                    
+                                    if let firstLine = staffLines.first {
+                                        ConversationBox(line: firstLine)
+                                    }
                                 }
                                 .padding(.top, 42)
                                 .padding(.horizontal, 36)
@@ -60,15 +66,15 @@ struct PracticeView: View {
                                 VStack {
                                     WordNodes()
                                 }
-                                .frame(maxWidth: .infinity, maxHeight: 320)
+                                .frame(maxWidth: .infinity, maxHeight: 300)
                                 .background(.white)
                                 .cornerRadius(32)
+                                .padding(.bottom, 16)
                             }
                             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
                         }
                     }
                 }
-            }
             if step < 1 {
                 VStack {
                     Color.clear // Invisible view to attach .onAppear

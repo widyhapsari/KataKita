@@ -7,119 +7,134 @@
 
 import SwiftUI
 
+struct WordSet {
+    let romaji: [String]
+    let nihongo: [String]
+    let english: String
+}
+
+// Sample data
+let wordSets: [WordSet] = [
+    WordSet(
+        romaji: ["Arigatou", "gozaimasu.", "Ebi", "nuki", "tte", "dekimasu", "ka?"],
+        nihongo: ["ありがとう", "ございます.", "エビ", "抜き", "って", "できます", "か?"],
+        english: "🇬🇧: “Excuse me, does this food contain pork and alcohol?”"
+    ),
+    WordSet(
+        romaji: ["Sumimasen", "niku", "wa", "haitte", "imasu", "ka?"],
+        nihongo: ["すみません", "肉", "は", "入って", "います", "か？"],
+        english: "🇬🇧: “Excuse me, does this contain meat?”"
+    )
+]
+
 struct WordNodes: View {
     @StateObject private var speechManager = speechRecognitionManager()
     @StateObject private var viewModel = QuizViewModel()
     @State private var showButton = true
-    
+    @State private var nextButton = true
+    @State private var step = 0
+
+    var currentSet: WordSet {
+        wordSets[min(step, wordSets.count - 1)]
+    }
+
     var body: some View {
         VStack(spacing: 16) {
-            // Word cards with individual scores
-            VStack(spacing: 20) {
-                // Title
-                Text("Ask this to the staff:")
-                    .font(.title3)
-//                    .foregroundStyle(Color.gray)
-                
-                HStack(spacing: 24) {
+            Text("Ask this to the staff:")
+                .font(.callout)
+
+            // Split words into two rows
+            let midIndex = currentSet.romaji.count * 3 / 4
+            let firstRow = zip(
+                currentSet.romaji.prefix(midIndex),
+                currentSet.nihongo.prefix(midIndex)
+            )
+            let secondRow = zip(
+                currentSet.romaji.suffix(from: midIndex),
+                currentSet.nihongo.suffix(from: midIndex)
+            )
+
+            HStack(spacing: 24) {
+                ForEach(Array(firstRow), id: \.1) { romaji, nihongo in
+                    let cleanNihongo = nihongo.trimmingCharacters(in: .punctuationCharacters)
                     wordCard(
-                        romaji: "Arigatou",
-                        nihongo: "ありがとう",
-                        status: viewModel.wordStatuses["ありがとう"] ?? .neutral
-                    )
-                    
-                    wordCard(
-                        romaji: "gozaimasu.",
-                        nihongo: "ございます.",
-                        status: viewModel.wordStatuses["ございます"] ?? .neutral
-                    )
-                    
-                    wordCard(
-                        romaji: "Ebi",
-                        nihongo: "エビ",
-                        status: viewModel.wordStatuses["エビ"] ?? .neutral
+                        romaji: romaji,
+                        nihongo: nihongo,
+                        status: viewModel.wordStatuses[cleanNihongo] ?? .neutral
                     )
                 }
-                
-                HStack(spacing: 24) {
+            }
+
+            HStack(spacing: 24) {
+                ForEach(Array(secondRow), id: \.1) { romaji, nihongo in
+                    let cleanNihongo = nihongo.trimmingCharacters(in: .punctuationCharacters)
                     wordCard(
-                        romaji: "nuki",
-                        nihongo: "抜き",
-                        status: viewModel.wordStatuses["抜き"] ?? .neutral
-                    )
-                    
-                    wordCard(
-                        romaji: "tte",
-                        nihongo: "って",
-                        status: viewModel.wordStatuses["って"] ?? .neutral
-                    )
-                    
-                    wordCard(
-                        romaji: "dekimasu",
-                        nihongo: "できます",
-                        status: viewModel.wordStatuses["できます"] ?? .neutral
-                    )
-                    
-                    wordCard(
-                        romaji: "ka?",
-                        nihongo: "か?",
-                        status: viewModel.wordStatuses["か"] ?? .neutral
+                        romaji: romaji,
+                        nihongo: nihongo,
+                        status: viewModel.wordStatuses[cleanNihongo] ?? .neutral
                     )
                 }
 
             }
-            
-            Text("🇬🇧: “Excuse me, does this food contain pork and alcohol?”")
+
+            Text(currentSet.english)
                 .font(.footnote)
                 .foregroundStyle(.gray)
-            
-            // Recording button
+
             if showButton {
                 Button(action: {
                     if speechManager.isRecording {
                         speechManager.stopRecording()
+                        showButton = false
                     } else {
                         viewModel.resetStatuses()
                         speechManager.startRecording()
                     }
                 }) {
-                    VStack(spacing: 8) {
-                        Image(systemName: speechManager.isRecording ? "stop.circle.fill" : "mic.circle.fill")
-                            .font(.system(size: 56))
-                            .foregroundColor(speechManager.isRecording ? .red : Color("04B3AC"))
-                    }
+                    Image(systemName: speechManager.isRecording ? "stop.circle.fill" : "mic.circle.fill")
+                        .font(.system(size: 56))
+                        .foregroundColor(speechManager.isRecording ? .red : Color("04B3AC"))
                 }
+                .frame(maxWidth: .infinity, maxHeight: 80)
                 .disabled(!speechManager.hasPermission)
             }
-            
-            if speechManager.overallScore >= 0.8 {
-                VStack(spacing: 8) {
-                    Text("Overall Score")
-                        .font(.headline)
-                        .foregroundColor(.secondary)
 
-                    ZStack {
-                        Circle()
-                            .stroke(Color.gray.opacity(0.3), lineWidth: 8)
-                            .frame(width: 120, height: 120)
-
-                        Circle()
-                            .trim(from: 0, to: speechManager.overallScore)
-                            .stroke(
-                                speechManager.overallScore >= 0.7 ? Color.green :
-                                speechManager.overallScore >= 0.5 ? Color.orange : Color.red,
-                                style: StrokeStyle(lineWidth: 8, lineCap: .round)
-                            )
-                            .frame(width: 120, height: 120)
-                            .rotationEffect(.degrees(-90))
-                            .animation(.easeInOut(duration: 1.0), value: speechManager.overallScore)
-
-                        Text("\(Int(speechManager.overallScore * 100))%")
-                            .font(.title2)
-                            .fontWeight(.bold)
-                    }
+            if speechManager.overallScore < 0.8 && !showButton {
+                Button(action: {
+                    showButton = true
+                }) {
+                    Text("Retry")
+                        .font(.title2)
+                        .foregroundStyle(.black)
+                        .padding()
+                        .frame(maxWidth: .infinity, alignment: .bottom)
+                        .background(
+                            Image("sign")
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(maxHeight: 60)
+                        )
                 }
-                .padding()
+                .frame(maxWidth: .infinity, maxHeight: 80)
+            } else if speechManager.overallScore >= 0.8 && !showButton {
+                Button(action: {
+                    step += 1
+                    showButton = true
+                }) {
+                    Text("Next")
+                        .font(.title2)
+                        .foregroundStyle(.black)
+                        .padding()
+                        .frame(maxWidth: .infinity, alignment: .bottom)
+                        .background(
+                            Image("sign")
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(maxHeight: 60)
+                        )
+                }
+                .frame(maxWidth: .infinity, maxHeight: 80)
+                .disabled(step >= wordSets.count - 1)
             }
         }
         .padding()
@@ -144,8 +159,8 @@ struct wordCard: View {
     var borderColor: Color {
         switch status {
         case .excellent: return .green
-        case .good: return .orange
-        case .bad: return .red
+        case .good: return .green
+        case .bad: return .green
         case .neutral: return .gray
         }
     }
@@ -153,7 +168,7 @@ struct wordCard: View {
     var body: some View {
         VStack(spacing: 10) {
             Text(romaji)
-                .font(.system(size: 18, weight: .medium))
+                .font(.callout)
                 .foregroundColor(borderColor)
                 .background(
                     GeometryReader { geometry in
@@ -165,11 +180,11 @@ struct wordCard: View {
                 )
                 
             Text(nihongo)
-                .font(.system(size: 14, weight: .bold))
+                .font(.footnote)
                 .foregroundColor(.gray)
         }
         .background(.white)
-        .cornerRadius(12)
+//        .cornerRadius(12)
         .scaleEffect(status == .excellent ? 1.05 : 1.0)
         .animation(.spring(response: 0.3), value: status)
     }
