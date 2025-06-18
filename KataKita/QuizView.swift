@@ -38,7 +38,7 @@ struct QuizView: View {
             .disabled(!speechManager.hasPermission)
             
             NavigationLink {
-                Feedback()
+                Feedback(feedbackType: .positive)
             } label: {
                 VStack {
                     Text("Feedback")
