@@ -9,6 +9,7 @@ import SwiftUI
 
 struct PracticeView: View {
     @State private var step = 0
+    @State var nextButton: Bool
 
     var value: Double {
         return 1/3
@@ -64,7 +65,65 @@ struct PracticeView: View {
                             VStack {
                                 Spacer() // Only pushes WordNodes
                                 VStack {
-                                    WordNodes()
+                                    WordNodes(nextButton: $nextButton)
+                                }
+                                .frame(maxWidth: .infinity, maxHeight: 300)
+                                .background(.white)
+                                .cornerRadius(32)
+                                .padding(.bottom, 16)
+                            }
+                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+                        }
+                    }
+                } else if step == 2 {
+                    VStack {
+                        CustomProgressView(value: 0.4)
+                            .padding(.top, 42)
+                        
+                        ZStack {
+                            PracticeBG(waiter: "waiter1")
+                            
+                            VStack {
+                                HStack {
+                                    Spacer()
+                                    
+                                    if let secondLine = staffLines.dropFirst().first {
+                                        ConversationBox(line: secondLine)
+                                    }
+                                }
+                                Spacer()
+                            }
+                            .padding(.top, 42)
+                            .padding(.horizontal, 36)
+                        }
+                    }
+                } else if step == 3 {
+                    VStack {
+                        CustomProgressView(value: 0.4)
+                            .padding(.top, 42)
+                        
+                        ZStack(alignment: .top) {
+                            PracticeBG(waiter: "waiter1") // background stays still
+
+                            // Top overlay
+                            VStack {
+                                HStack {
+                                    Spacer()
+                                    
+                                    if let firstLine = staffLines.dropFirst().first {
+                                        ConversationBox(line: firstLine)
+                                    }
+                                }
+                                .padding(.top, 42)
+                                .padding(.horizontal, 36)
+                            }
+                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+
+                            // Bottom overlay
+                            VStack {
+                                Spacer() // Only pushes WordNodes
+                                VStack {
+                                    WordNodes(nextButton: $nextButton)
                                 }
                                 .frame(maxWidth: .infinity, maxHeight: 300)
                                 .background(.white)
@@ -75,7 +134,42 @@ struct PracticeView: View {
                         }
                     }
                 }
-            if step < 1 {
+            
+            
+            if step == 0 {
+                VStack {
+                    Color.clear // Invisible view to attach .onAppear
+                        .frame(height: 0)
+                        .onAppear {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                                step += 1
+                            }
+                        }
+                }
+            } else if step == 1 {
+                VStack {
+                    Spacer()
+                    
+                    if nextButton {
+                        Button(action: {
+                            step += 1
+                        }) {
+                            Text("Next")
+                                .font(.title2)
+                                .foregroundStyle(.black)
+                                .padding()
+                                .frame(maxWidth: .infinity, alignment: .bottom)
+                                .background(
+                                    Image("sign")
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fit)
+                                        .frame(maxHeight: 60)
+                                )
+                        }
+                        .padding(.bottom, 42)
+                    }
+                }
+            } else if step == 2 {
                 VStack {
                     Color.clear // Invisible view to attach .onAppear
                         .frame(height: 0)
@@ -85,11 +179,12 @@ struct PracticeView: View {
                             }
                         }
                 }
+            }
     //        } else {
     //            Button("Finish") {
     //                navigateToNextPage = true
     //            }
-            }
+            
         }
         .navigationTitle("Conversation 1")
         .navigationBarTitleDisplayMode(.inline)
@@ -113,7 +208,7 @@ struct PracticeView: View {
 
 #Preview {
     NavigationStack {
-        PracticeView()
+        PracticeView(nextButton: false)
     }
 }
 

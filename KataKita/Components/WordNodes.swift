@@ -16,14 +16,14 @@ struct WordSet {
 // Sample data
 let wordSets: [WordSet] = [
     WordSet(
+        romaji: ["Sumimasen", "niku", "chaahan", "wa", "ebi", "toka", "kani", "haitte", "imasu", "ka?"],
+        nihongo: ["すみません", "この", "チャーハン", "は", "エビ", "とか", "カニ", "入って", "います", "か"],
+        english: "🇬🇧: “Excuse me, does this contain meat?”"
+    ),
+    WordSet(
         romaji: ["Arigatou", "gozaimasu.", "Ebi", "nuki", "tte", "dekimasu", "ka?"],
         nihongo: ["ありがとう", "ございます.", "エビ", "抜き", "って", "できます", "か?"],
         english: "🇬🇧: “Excuse me, does this food contain pork and alcohol?”"
-    ),
-    WordSet(
-        romaji: ["Sumimasen", "niku", "wa", "haitte", "imasu", "ka?"],
-        nihongo: ["すみません", "肉", "は", "入って", "います", "か？"],
-        english: "🇬🇧: “Excuse me, does this contain meat?”"
     )
 ]
 
@@ -31,7 +31,7 @@ struct WordNodes: View {
     @StateObject private var speechManager = speechRecognitionManager()
     @StateObject private var viewModel = QuizViewModel()
     @State private var showButton = true
-    @State private var nextButton = true
+    @Binding var nextButton: Bool
     @State private var step = 0
 
     var currentSet: WordSet {
@@ -44,7 +44,7 @@ struct WordNodes: View {
                 .font(.callout)
 
             // Split words into two rows
-            let midIndex = currentSet.romaji.count * 3 / 4
+            let midIndex = currentSet.romaji.count * 2 / 4
             let firstRow = zip(
                 currentSet.romaji.prefix(midIndex),
                 currentSet.nihongo.prefix(midIndex)
@@ -88,6 +88,7 @@ struct WordNodes: View {
                         showButton = false
                     } else {
                         viewModel.resetStatuses()
+                        speechManager.setCurrentWordSet(currentSet)
                         speechManager.startRecording()
                     }
                 }) {
@@ -97,6 +98,11 @@ struct WordNodes: View {
                 }
                 .frame(maxWidth: .infinity, maxHeight: 80)
                 .disabled(!speechManager.hasPermission)
+            } else {
+                VStack {
+                    
+                }
+                .frame(maxWidth: .infinity, maxHeight: 80)
             }
 
             if speechManager.overallScore < 0.8 && !showButton {
@@ -116,25 +122,6 @@ struct WordNodes: View {
                         )
                 }
                 .frame(maxWidth: .infinity, maxHeight: 80)
-            } else if speechManager.overallScore >= 0.8 && !showButton {
-                Button(action: {
-                    step += 1
-                    showButton = true
-                }) {
-                    Text("Next")
-                        .font(.title2)
-                        .foregroundStyle(.black)
-                        .padding()
-                        .frame(maxWidth: .infinity, alignment: .bottom)
-                        .background(
-                            Image("sign")
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .frame(maxHeight: 60)
-                        )
-                }
-                .frame(maxWidth: .infinity, maxHeight: 80)
-                .disabled(step >= wordSets.count - 1)
             }
         }
         .padding()
@@ -144,11 +131,18 @@ struct WordNodes: View {
         .onReceive(speechManager.$pronunciationScores) { scores in
             viewModel.updateScores(from: scores)
         }
+        .onChange(of: speechManager.overallScore) { newScore in
+            if newScore >= 0.8 && !showButton {
+                showButton = false
+                nextButton = true
+            }
+        }
+            .disabled(step >= wordSets.count - 1)
     }
 }
 
 #Preview {
-    WordNodes()
+    WordNodes(nextButton: .constant(false))
 }
 
 struct wordCard: View {
@@ -184,7 +178,7 @@ struct wordCard: View {
                 .foregroundColor(.gray)
         }
         .background(.white)
-//        .cornerRadius(12)
+        .cornerRadius(12)
         .scaleEffect(status == .excellent ? 1.05 : 1.0)
         .animation(.spring(response: 0.3), value: status)
     }

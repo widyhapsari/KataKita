@@ -50,7 +50,7 @@ struct Guide: View {
                 
                 if currentPage == overallPages {
                     NavigationLink {
-                        PracticeView()
+                        PracticeView(nextButton: false)
                     } label: {
                         Text(currentPage == overallPages ? "Ready!" :"Next")
                             .font(.title2)
