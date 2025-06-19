@@ -33,6 +33,21 @@ struct WordNodes: View {
     @State private var showButton = true
     @Binding var nextButton: Bool
     @Binding var step: Int
+    
+    private func handleScoreChange(_ newScore: Double) {
+        print("📊 Overall score changed to: \(newScore), Step: \(step), Current nextButton: \(nextButton)")
+        
+        if newScore >= 0.8 {
+            print("✅ Score is good! Setting nextButton = true")
+            showButton = false
+            nextButton = true
+        } else {
+            print("❌ Score too low: \(newScore)")
+            showButton = false
+            nextButton = false
+        }
+    }
+
 
     var currentSet: WordSet {
         switch step {
@@ -128,6 +143,7 @@ struct WordNodes: View {
                                 .frame(maxHeight: 60)
                         )
                 }
+                .padding(.bottom, 42)
                 .frame(maxWidth: .infinity, maxHeight: 80)
             }
         }
@@ -145,20 +161,18 @@ struct WordNodes: View {
                 showButton = false
             }
         }
-        .onChange(of: speechManager.overallScore) { newScore in
-            print("📊 Overall score changed to: \(newScore), Step: \(step), Current nextButton: \(nextButton)")
-            if newScore >= 0.8 {
-                print("✅ Score is good! Setting nextButton = true")
-                showButton = false
-                nextButton = true
-                print("🔄 After setting: nextButton = \(nextButton)")
-            } else if newScore < 0.8 {
-                print("❌ Score too low: \(newScore)")
-                // Score is available but not good enough
-                showButton = false // This will show the retry button
-                nextButton = false
+        
+        .onChange(of: speechManager.wordSet1OverallScore) { newScore in
+            if step == 1 {
+                handleScoreChange(newScore)
             }
         }
+        .onChange(of: speechManager.wordSet2OverallScore) { newScore in
+            if step == 3 {
+                handleScoreChange(newScore)
+            }
+        }
+
         .onChange(of: nextButton) { newValue in
             print("🎯 nextButton binding changed to: \(newValue) at step: \(step)")
         }
