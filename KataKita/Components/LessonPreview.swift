@@ -94,5 +94,6 @@ struct LessonPreview: View {
 #Preview {
     NavigationStack {
         LessonPreview()
+            .environmentObject(WelcomeViewModel())
     }
 }
