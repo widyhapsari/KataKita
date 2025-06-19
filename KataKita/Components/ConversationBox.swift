@@ -41,8 +41,17 @@ struct ConversationBox: View {
                 .font(.caption2)
                 .multilineTextAlignment(.center)
             
-            Circle()
-                .frame(width: 28, height: 28)
+            ZStack {
+                Circle()
+                    .fill(Color.black)
+                    .frame(width: 26, height: 26)
+                    .blur(radius: 3)
+
+                Image(systemName: "speaker.wave.2.circle.fill")
+                    .font(.system(size: 32))
+                    .foregroundColor(.white)
+                    .font(.system(size: 28))
+            }
             
             Text(line.staffEnglish)
                 .font(.caption2)
