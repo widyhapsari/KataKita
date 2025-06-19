@@ -21,8 +21,8 @@ class QuizViewModel: ObservableObject {
     
     @Published var currentWords: [String] = []
     
-    static let wordSet1 = ["すみません", "この", "チャーハン", "は", "エビ", "とか", "カニ", "入って", "います", "か"]
-    static let wordSet2 = ["ありがとう", "ございます", "エビ", "抜き", "って", "できます", "か"]
+    static let wordSet1 = ["すみません", "この", "チャーハン", "は", "豚肉", "とか", "アルコール", "入って", "います", "か"]
+    static let wordSet2 = ["ありがとう", "ございます", "豚肉", "抜き", "って", "できます", "か"]
     
     func setWordSet(_ words: [String]) {
         DispatchQueue.main.async {

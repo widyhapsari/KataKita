@@ -8,7 +8,15 @@
 import SwiftUI
 
 struct FeedbackView: View {
-    var feedbackType: FeedbackType
+    var score: Double
+    
+    var feedbackType: FeedbackType {
+        feedbackType(for: score)
+    }
+    
+    func feedbackType(for score: Double) -> FeedbackType {
+        return score >= 0.8 ? .positive : .negative
+    }
     
     var body: some View {
         ZStack {
@@ -96,8 +104,8 @@ struct FeedbackView: View {
 }
 
 
-#Preview {
-    NavigationStack {
-        FeedbackView(feedbackType: .positive)
-    }
-}
+//#Preview {
+//    NavigationStack {
+//        FeedbackView(feedbackType: )
+//    }
+//}

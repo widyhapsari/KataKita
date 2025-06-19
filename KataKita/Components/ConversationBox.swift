@@ -25,7 +25,7 @@ struct staffLine: Identifiable, Hashable {
 
 let staffLines: [staffLine] = [
     staffLine(staffRomaji: "Kon'nichiwa. Nani o go chūmon sa remasu ka?", staffNihongo: "こんにちは。何をご注文されますか？", staffEnglish: "Hello, what would you like to order?", staffAudio: "staffline1.mp3"),
-    staffLine(staffRomaji: "Hai, ebi ga haitte orimasu ga, kani wa tsukatte orimasen.", staffNihongo: "はい、エビが入っておりますが、カニは使っておりません。", staffEnglish: "Yes, it contains shrimp, but we don’t use crab.", staffAudio: "staffline2.mp3"),
+    staffLine(staffRomaji: "Hai, butaniku ga haitte orimasu ga, arukoru wa tsukatte orimasen.", staffNihongo: "はい、豚肉が入っておりますが、アルコールは使っておりません。", staffEnglish: "Yes, it contains pork, but we don’t use alcohol.", staffAudio: "staffline2.mp3"),
     staffLine(staffRomaji: "Kashikomarimashita, Shōshō omachi kudasai.", staffNihongo: "かしこまりました, 少々お待ちください。", staffEnglish: "Certainly, Please wait a moment.", staffAudio: "staffline3.mp3"),
     staffLine(staffRomaji: "Eh? Sumimasen, mō ichido ii desu ka?", staffNihongo: "えっ？すみません、もう一度いいですか？", staffEnglish: "Huh? Sorry, could you say that again?", staffAudio: "staffline4.mp3")
     ]

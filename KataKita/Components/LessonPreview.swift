@@ -11,8 +11,8 @@ struct LessonPreview: View {
     @EnvironmentObject var viewModel: WelcomeViewModel
     
     let vocabs: [Vocab] = [
-        Vocab(name: "ebi", image: "alcohol", nihongo: "エビ", english: "shrimp", audio_name: "shrimp.mp3"),
-        Vocab(name: "kani", image: "pork", nihongo: "カニ", english: "crab", audio_name: "crab.mp3"),
+        Vocab(name: "butaniku", image: "Pork", nihongo: "豚肉", english: "pork", audio_name: "pork.mp3"),
+        Vocab(name: "arukoru", image: "Alcohol", nihongo: "アルコール", english: "alcohol", audio_name: "alcohol.mp3"),
     ]
     
     let columns = [
@@ -31,19 +31,19 @@ struct LessonPreview: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             
             VStack {
-                Text("Conversation 1")
-                    .font(.title)
-                    .foregroundStyle(.cyan)
-                    .fontWeight(.bold)
+                Text("Conversation #1: Order Halal Food")
+                    .font(.subheadline)
+                    .bold()
+                    .foregroundColor(.gray)
                     .padding(.bottom, 5)
                 
                 VStack (spacing: 10) {
-                    Text("Practice asking about ingredients and stating your dietary needs")
+                    Text("Speak Up About What You Can’t Eat")
                         .multilineTextAlignment(.center)
                         .font(.body)
                         .fontWeight(.semibold)
                     
-                    Text("Get ready, you’ll crush these vocabularies")
+                    Text("You’ll crush these vocabularies...")
                         .font(.footnote)
                         .foregroundStyle(.gray)
                         .fontWeight(.semibold)
@@ -75,13 +75,14 @@ struct LessonPreview: View {
                 ScenarioView()
             } label: {
                 ZStack {
-                    Image("sign")
+                    Image("signSecondary")
                         .resizable()
                         .frame(maxWidth: .infinity, maxHeight: 60)
                     
-                    Text("Start")
+                    Text("START")
                         .font(.title2)
                         .foregroundStyle(.black)
+                        .bold()
                 }
                 .padding()
                 .frame(width: 180, alignment: .bottom)
