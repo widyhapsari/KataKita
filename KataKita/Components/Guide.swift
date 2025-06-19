@@ -85,23 +85,6 @@ struct Guide: View {
                     }
                 }
             }
-//=======
-//            NavigationLink(destination: {
-////                PracticeView()
-//                QuizView()
-//            }, label: {
-//                HStack {
-//                    Image(systemName: "chevron.right")
-//                    
-//                    Text("Ask staff now")
-//                }
-//                .padding()
-//                .foregroundStyle(.white)
-//                .frame(maxWidth: .infinity)
-//                .background(.black)
-//                .cornerRadius(12)
-//            })
-//>>>>>>> development
         }
         .padding()
         .frame(maxWidth: .infinity)

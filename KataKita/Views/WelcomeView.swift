@@ -27,6 +27,7 @@ struct WelcomeView: View {
                         .environmentObject(viewModel)
                 }
             }
+            .navigationBarBackButtonHidden(true)
         case .error(let error):
             ErrorView(error: error, onRetry: {
                 print("Button pressed!")
