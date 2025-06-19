@@ -9,7 +9,7 @@ import SwiftUI
 
 struct PracticeView: View {
     @State private var step = 0
-    @State var nextButton: Bool
+    @State var nextButton: Bool = false // Added explicit default value
 
     var value: Double {
         return 1/3
@@ -19,7 +19,7 @@ struct PracticeView: View {
         ZStack {
                 if step == 0 {
                     VStack {
-                        CustomProgressView(value: 0.4)
+                        CustomProgressView(value: 0.25)
                             .padding(.top, 42)
                         
                         ZStack {
@@ -41,7 +41,7 @@ struct PracticeView: View {
                     }
                 } else if step == 1 {
                     VStack {
-                        CustomProgressView(value: 0.4)
+                        CustomProgressView(value: 0.5)
                             .padding(.top, 42)
                         
                         ZStack(alignment: .top) {
@@ -65,7 +65,7 @@ struct PracticeView: View {
                             VStack {
                                 Spacer() // Only pushes WordNodes
                                 VStack {
-                                    WordNodes(nextButton: $nextButton)
+                                    WordNodes(nextButton: $nextButton, step: $step)
                                 }
                                 .frame(maxWidth: .infinity, maxHeight: 300)
                                 .background(.white)
@@ -77,7 +77,7 @@ struct PracticeView: View {
                     }
                 } else if step == 2 {
                     VStack {
-                        CustomProgressView(value: 0.4)
+                        CustomProgressView(value: 0.75)
                             .padding(.top, 42)
                         
                         ZStack {
@@ -99,7 +99,7 @@ struct PracticeView: View {
                     }
                 } else if step == 3 {
                     VStack {
-                        CustomProgressView(value: 0.4)
+                        CustomProgressView(value: 1)
                             .padding(.top, 42)
                         
                         ZStack(alignment: .top) {
@@ -121,9 +121,9 @@ struct PracticeView: View {
 
                             // Bottom overlay
                             VStack {
-                                Spacer() // Only pushes WordNodes
+                                Spacer()
                                 VStack {
-                                    WordNodes(nextButton: $nextButton)
+                                    WordNodes(nextButton: $nextButton, step: $step)
                                 }
                                 .frame(maxWidth: .infinity, maxHeight: 300)
                                 .background(.white)
@@ -152,6 +152,8 @@ struct PracticeView: View {
                     
                     if nextButton {
                         Button(action: {
+                            print("🎯 Next button tapped at step \(step)")
+                            nextButton = false // Reset for next interaction
                             step += 1
                         }) {
                             Text("Next")
@@ -175,16 +177,39 @@ struct PracticeView: View {
                         .frame(height: 0)
                         .onAppear {
                             DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                                nextButton = false // Reset nextButton before moving to step 3
                                 step += 1
                             }
                         }
                 }
+            } else if step == 3 {
+                // Add the Next button for step 3 as well
+                VStack {
+                    Spacer()
+                    
+                    if nextButton {
+                        Button(action: {
+                            print("🎯 Final Next button tapped at step \(step)")
+                            // Handle completion - maybe navigate to next screen
+                            nextButton = false
+                            step += 1
+                        }) {
+                            Text("Finish")
+                                .font(.title2)
+                                .foregroundStyle(.black)
+                                .padding()
+                                .frame(maxWidth: .infinity, alignment: .bottom)
+                                .background(
+                                    Image("sign")
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fit)
+                                        .frame(maxHeight: 60)
+                                )
+                        }
+                        .padding(.bottom, 42)
+                    }
+                }
             }
-    //        } else {
-    //            Button("Finish") {
-    //                navigateToNextPage = true
-    //            }
-            
         }
         .navigationTitle("Conversation 1")
         .navigationBarTitleDisplayMode(.inline)
@@ -202,6 +227,9 @@ struct PracticeView: View {
                 }
                 
             }
+        }
+        .onChange(of: nextButton) { newValue in
+            print("🔄 PracticeView: nextButton changed to \(newValue) at step \(step)")
         }
     }
 }
