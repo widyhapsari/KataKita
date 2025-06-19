@@ -210,7 +210,6 @@ struct wordCard: View {
                 .foregroundColor(.gray)
         }
         .background(.white)
-        .cornerRadius(12)
         .scaleEffect(status == .excellent ? 1.05 : 1.0)
         .animation(.spring(response: 0.3), value: status)
     }
