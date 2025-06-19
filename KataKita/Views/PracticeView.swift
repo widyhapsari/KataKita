@@ -161,6 +161,7 @@ struct PracticeView: View {
                             print("🎯 Next button tapped at step \(step)")
                             nextButton = false // Reset for next interaction
                             step += 1
+                            viewModel.playAudio(named: "staffline2.mp3")
                         }) {
 //                            Text("Next")
 //                                .font(.title2)
@@ -201,6 +202,7 @@ struct PracticeView: View {
                                 nextButton = false
                                 step += 1
                                 navigateToNext = true
+                                viewModel.playAudio(named: "staffline3.mp3")
                             }) {
                                 Text("FINISH")
                                     .font(.title2)

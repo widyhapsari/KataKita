@@ -16,8 +16,8 @@ struct WelcomeView: View {
             LoadingView()
         case .loaded:
             ZStack {
-                Rectangle()
-                    .foregroundStyle(Color("B1E5FD"))
+                Image("FeedbackFramePositive")
+                    .resizable()
                     .ignoresSafeArea()
                 
                 VStack {
