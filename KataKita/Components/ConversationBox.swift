@@ -7,7 +7,6 @@
 
 import SwiftUI
 
-//<<<<<<< HEAD
 struct staffLine: Identifiable, Hashable {
     let id: UUID
     let staffRomaji: String
@@ -79,10 +78,3 @@ struct RoundedCorner: Shape {
         return Path(path.cgPath)
     }
 }
-//<<<<<<< HEAD
-//
-//struct staffSpeaks1 {
-//    
-//}
-//=======
-//>>>>>>> development

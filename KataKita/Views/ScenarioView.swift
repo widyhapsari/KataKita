@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct ScenarioView: View {
-//<<<<<<< HEAD
     @ObservedObject var viewModel: ScenarioViewModel = ScenarioViewModel()
     @State private var currentPage: Int = 1
     

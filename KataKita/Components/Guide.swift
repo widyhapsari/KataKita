@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct Guide: View {
-//<<<<<<< HEAD
     @Binding var currentPage: Int
     
     let overallPages: Int
@@ -29,7 +28,6 @@ struct Guide: View {
                 .multilineTextAlignment(.center)
                 .padding()
             
-//<<<<<<< HEAD
             HStack {
                 Button {
                     if currentPage > 1 {

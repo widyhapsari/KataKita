@@ -15,7 +15,6 @@ struct PracticeView: View {
     }
     
     var body: some View {
-//<<<<<<< HEAD
         ZStack {
                 if step == 0 {
                     VStack {
@@ -235,7 +234,6 @@ struct PracticeView: View {
 }
 
 #Preview {
-//<<<<<<< HEAD
     NavigationStack {
         PracticeView(nextButton: false)
     }
