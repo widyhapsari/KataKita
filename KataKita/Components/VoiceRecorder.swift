@@ -86,10 +86,3 @@ struct VoiceRecorder: View {
 #Preview {
     VoiceRecorder()
 }
-
-//
-//  ScenarioView.swift
-//  KataKita
-//
-//  Created by Arief Roihan Nur Rahman on 16/06/25.
-//

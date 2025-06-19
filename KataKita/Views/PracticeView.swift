@@ -10,12 +10,12 @@ import SwiftUI
 struct PracticeView: View {
     @State private var step = 0
     @State var nextButton: Bool = false // Added explicit default value
-
     var value: Double {
         return 1/3
     }
     
     var body: some View {
+//<<<<<<< HEAD
         ZStack {
                 if step == 0 {
                     VStack {
@@ -235,6 +235,7 @@ struct PracticeView: View {
 }
 
 #Preview {
+//<<<<<<< HEAD
     NavigationStack {
         PracticeView(nextButton: false)
     }
