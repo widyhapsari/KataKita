@@ -50,7 +50,6 @@ struct FeedbackView: View {
                 Feedback(feedbackType: .negative)
                     .padding(.horizontal, -8)
                     .fixedSize(horizontal: false, vertical: true)
-                
                 Spacer() .frame(height: 10)
                 HStack {
                     Button(action: {
