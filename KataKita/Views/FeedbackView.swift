@@ -47,7 +47,7 @@ struct FeedbackView: View {
                 }
                 
                 // Main feedback card (component)
-                Feedback(feedbackType: .negative)
+                Feedback(feedbackType: .positive)
                     .padding(.horizontal, -8)
                     .fixedSize(horizontal: false, vertical: true)
                 
@@ -96,6 +96,6 @@ struct FeedbackView: View {
 
 #Preview {
     NavigationStack {
-        FeedbackView(feedbackType: .negative)
+        FeedbackView(feedbackType: .positive)
     }
 }

@@ -16,62 +16,47 @@ enum WordStatus {
 }
 
 class QuizViewModel: ObservableObject {
-    @Published var wordStatuses: [String: WordStatus] = [
-        "ありがとう": .neutral,
-        "ございます": .neutral,
-        "エビ": .neutral,
-        "抜き": .neutral,
-        "って": .neutral,
-        "できます": .neutral,
-        "か": .neutral
-    ]
+    @Published var wordStatuses: [String: WordStatus] = [:]
+    @Published var wordScores: [String: Double] = [:]
     
-    @Published var wordScores: [String: Double] = [
-        "ありがとう": 0.0,
-        "ございます": 0.0,
-        "エビ": 0.0,
-        "抜き": 0.0,
-        "って": 0.0,
-        "できます": 0.0,
-        "か": 0.0
-    ]
+    @Published var currentWords: [String] = []
+    
+    static let wordSet1 = ["すみません", "この", "チャーハン", "は", "エビ", "とか", "カニ", "入って", "います", "か"]
+    static let wordSet2 = ["ありがとう", "ございます", "エビ", "抜き", "って", "できます", "か"]
+    
+    func setWordSet(_ words: [String]) {
+        DispatchQueue.main.async {
+            self.currentWords = words
+            self.wordStatuses = Dictionary(uniqueKeysWithValues: words.map { ($0, .neutral) })
+            self.wordScores = Dictionary(uniqueKeysWithValues: words.map { ($0, 0.0) })
+        }
+    }
     
     private var detectedWords: Set<String> = []
     
     func updateStatuses(from recognizedText: String) {
         print("🔍 Recognized text: '\(recognizedText)'")
         
-        var updated = wordStatuses
-        
         guard !recognizedText.isEmpty else {
             print("⚠️ Empty recognized text, skipping text-based status update")
             return
         }
         
-        // Check each word in the recognized text
-        let words = ["ありがとう",
-                    "ございます",
-                    "エビ",
-                    "抜き",
-                    "って",
-                    "できます",
-                    "か"]
-        for word in words {
-            // Check if the word appears in recognized text
+        var updated = wordStatuses
+        for word in currentWords {
             if recognizedText.contains(word) {
                 updated[word] = .excellent
                 print("✅ Found: \(word)")
-            } else if !recognizedText.isEmpty {
-                // Only mark as incorrect if we have some recognition result
+            } else {
                 print("❌ Missing: \(word)")
             }
         }
         
-        // Update the published property on main thread
         DispatchQueue.main.async {
             self.wordStatuses = updated
         }
     }
+
     
     func updateScores(from mlScores: [String: Double]) {
         DispatchQueue.main.async {
@@ -93,24 +78,8 @@ class QuizViewModel: ObservableObject {
     // Reset function for new attempts
     func resetStatuses() {
         DispatchQueue.main.async {
-            self.wordStatuses = [
-                "ありがとう": .neutral,
-                "ございます": .neutral,
-                "エビ": .neutral,
-                "抜き": .neutral,
-                "って": .neutral,
-                "できます": .neutral,
-                "か": .neutral
-            ]
-            self.wordScores = [
-                "ありがとう": 0.0,
-                "ございます": 0.0,
-                "エビ": 0.0,
-                "抜き": 0.0,
-                "って": 0.0,
-                "できます": 0.0,
-                "か": 0.0
-            ]
+            self.wordStatuses = Dictionary(uniqueKeysWithValues: self.currentWords.map { ($0, .neutral) })
+            self.wordScores = Dictionary(uniqueKeysWithValues: self.currentWords.map { ($0, 0.0) })
         }
     }
 }

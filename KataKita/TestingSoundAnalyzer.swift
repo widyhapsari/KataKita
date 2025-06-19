@@ -22,7 +22,7 @@ class SoundClassifier: NSObject, ObservableObject, SNResultsObserving {
 
         let request: SNClassifySoundRequest
         do {
-            request = try SNClassifySoundRequest(mlModel: KataKita_V0().model)
+            request = try SNClassifySoundRequest(mlModel: KataKita07().model)
         } catch {
             print("❌ Failed to load model: \(error)")
             return

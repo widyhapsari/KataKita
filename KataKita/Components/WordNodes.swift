@@ -94,7 +94,7 @@ struct WordNodes: View {
                     } else {
                         print("▶️ Starting recording")
                         viewModel.resetStatuses()
-                        speechManager.setCurrentWordSet(currentSet)
+//                        speechManager.setCurrentWordSet(currentSet)
                         speechManager.startRecording()
                     }
                 }) {
@@ -152,7 +152,7 @@ struct WordNodes: View {
                 showButton = false
                 nextButton = true
                 print("🔄 After setting: nextButton = \(nextButton)")
-            } else if newScore > 0 && newScore < 0.8 {
+            } else if newScore < 0.8 {
                 print("❌ Score too low: \(newScore)")
                 // Score is available but not good enough
                 showButton = false // This will show the retry button
@@ -164,8 +164,13 @@ struct WordNodes: View {
         }
         .onAppear {
             print("🎯 WordNodes appeared - Step: \(step), hasPermission: \(speechManager.hasPermission)")
-            // Reset nextButton when starting a new recording session
-            if step == 3 {
+            
+            viewModel.setWordSet(currentSet.nihongo.map { $0.trimmingCharacters(in: .punctuationCharacters) })
+            
+            if step == 1 {
+                speechManager.setCurrentWordSet(currentSet, wordSetId: 1)
+            } else if step == 3 {
+                speechManager.setCurrentWordSet(currentSet, wordSetId: 2)
                 nextButton = false
                 showButton = true
             }
