@@ -33,6 +33,21 @@ struct WordNodes: View {
     @State private var showButton = true
     @Binding var nextButton: Bool
     @Binding var step: Int
+    
+    private func handleScoreChange(_ newScore: Double) {
+        print("📊 Overall score changed to: \(newScore), Step: \(step), Current nextButton: \(nextButton)")
+        
+        if newScore >= 0.8 {
+            print("✅ Score is good! Setting nextButton = true")
+            showButton = false
+            nextButton = true
+        } else {
+            print("❌ Score too low: \(newScore)")
+            showButton = false
+            nextButton = false
+        }
+    }
+
 
     var currentSet: WordSet {
         switch step {
@@ -73,7 +88,7 @@ struct WordNodes: View {
                         speechManager.stopRecording()
                     } else {
                         viewModel.resetStatuses()
-                        speechManager.setCurrentWordSet(currentSet)
+//                        speechManager.setCurrentWordSet(currentSet)
                         speechManager.startRecording()
                     }
                 }) {
@@ -104,6 +119,7 @@ struct WordNodes: View {
                                 .frame(maxHeight: 60)
                         )
                 }
+                .padding(.bottom, 42)
                 .frame(maxWidth: .infinity, maxHeight: 80)
             }
         }
@@ -115,17 +131,29 @@ struct WordNodes: View {
                 showButton = false
             }
         }
-        .onChange(of: speechManager.overallScore) { newScore in
-            if newScore >= 0.8 {
-                nextButton = true
-                showButton = false
-            } else if newScore > 0 {
-                nextButton = false
-                showButton = false
+        .onChange(of: speechManager.wordSet1OverallScore) { newScore in
+            if step == 1 {
+                handleScoreChange(newScore)
             }
         }
-        .onAppear {
+        .onChange(of: speechManager.wordSet2OverallScore) { newScore in
             if step == 3 {
+                handleScoreChange(newScore)
+            }
+        }
+
+        .onChange(of: nextButton) { newValue in
+            print("🎯 nextButton binding changed to: \(newValue) at step: \(step)")
+        }
+        .onAppear {
+            print("🎯 WordNodes appeared - Step: \(step), hasPermission: \(speechManager.hasPermission)")
+            
+            viewModel.setWordSet(currentSet.nihongo.map { $0.trimmingCharacters(in: .punctuationCharacters) })
+            
+            if step == 1 {
+                speechManager.setCurrentWordSet(currentSet, wordSetId: 1)
+            } else if step == 3 {
+                speechManager.setCurrentWordSet(currentSet, wordSetId: 2)
                 nextButton = false
                 showButton = true
             }

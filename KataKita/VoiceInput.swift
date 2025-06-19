@@ -14,8 +14,16 @@ class speechRecognitionManager: NSObject, ObservableObject {
     @Published var isRecording = false
     @Published var recognizedText = ""
     @Published var hasPermission = false
-    @Published var pronunciationScores: [String: Double] = [:] // New: Store ML scores
-    @Published var overallScore: Double = 0.0 // New: Overall pronunciation score
+    @Published var pronunciationScores: [String: Double] = [:]
+    
+    // NEW: Separate overall scores for each word set
+    @Published var wordSet1OverallScore: Double = 0.0
+    @Published var wordSet2OverallScore: Double = 0.0
+    @Published var overallScore: Double = 0.0 // Keep this for backward compatibility
+    
+    // NEW: Store scores for each word set separately
+    @Published var wordSet1Scores: [String: Double] = [:]
+    @Published var wordSet2Scores: [String: Double] = [:]
 
     private let speechRecognizer = SFSpeechRecognizer(locale: Locale(identifier: "ja-JP"))
     private var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
@@ -24,14 +32,18 @@ class speechRecognitionManager: NSObject, ObservableObject {
     private var audioFileURL: URL?
     private var audioFileOutput: AVAudioFile?
     private var wordSegments: [SFTranscriptionSegment]?
-    private var pendingAnalysisCount = 0 // Track pending ML analyses
+    private var pendingAnalysisCount = 0
+    private var forcedWordSetId: Int? = nil
+    private var currentWordSetId: Int?
     
-    // NEW: Add current word set tracking
     var currentWordSet: WordSet?
     
-    // NEW: Combined phrases for each word set
-    private let wordSetPhrases = [ // First word set
-        "すみません肉は入っていますか" ,
+    // NEW: Define word sets for easy identification
+    private let wordSet1Words = ["すみません", "肉", "は", "入って", "います", "か"]
+    private let wordSet2Words = ["ありがとう", "この", "チャーハン", "は", "エビ", "とか", "カニ", "入って", "います", "か"]
+    
+    private let wordSetPhrases = [
+        "すみません肉は入っていますか",
         "すみませんこのチャーハンはエビとかカニ入っていますか"
     ]
 
@@ -40,9 +52,54 @@ class speechRecognitionManager: NSObject, ObservableObject {
         requestPermissions()
     }
     
-    // NEW: Method to set current word set
-    func setCurrentWordSet(_ wordSet: WordSet) {
+    func setCurrentWordSet(_ wordSet: WordSet, wordSetId: Int) {
         self.currentWordSet = wordSet
+        self.currentWordSetId = wordSetId
+        print("🎯 Setting current word set to: \(getCleanWords(from: wordSet)), ID: \(wordSetId)")
+        
+        pronunciationScores.removeAll()
+        overallScore = 0.0
+        pendingAnalysisCount = 0
+    }
+
+    
+    // NEW: Method to get current word set ID
+    private func getCurrentWordSetId() -> Int? {
+        guard let wordSet = currentWordSet else { return nil }
+        let cleanWords = getCleanWords(from: wordSet)
+        
+        if cleanWords == wordSet1Words {
+            return 1
+        } else if cleanWords == wordSet2Words {
+            return 2
+        }
+        return nil
+    }
+    
+    // NEW: Method to clear scores for specific word set
+    func clearScoresForWordSet(_ wordSetId: Int) {
+        switch wordSetId {
+        case 1:
+            wordSet1Scores.removeAll()
+            wordSet1OverallScore = 0.0
+        case 2:
+            wordSet2Scores.removeAll()
+            wordSet2OverallScore = 0.0
+        default:
+            break
+        }
+    }
+    
+    // NEW: Method to get scores for specific word set
+    func getScoresForWordSet(_ wordSetId: Int) -> [String: Double] {
+        switch wordSetId {
+        case 1:
+            return wordSet1Scores
+        case 2:
+            return wordSet2Scores
+        default:
+            return [:]
+        }
     }
 
     func requestPermissions() {
@@ -65,6 +122,8 @@ class speechRecognitionManager: NSObject, ObservableObject {
             stopRecording()
             return
         }
+        
+        print("🎤 Starting recording with word set: \(currentWordSet != nil ? "set" : "nil")")
 
         // Reset scores for new recording
         pronunciationScores.removeAll()
@@ -109,7 +168,6 @@ class speechRecognitionManager: NSObject, ObservableObject {
 
                 if error != nil || result?.isFinal == true {
                     self.stopRecording()
-                    // Add delay to ensure audio file is completely written
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                         self.sliceWordsFromRecording()
                     }
@@ -131,19 +189,16 @@ class speechRecognitionManager: NSObject, ObservableObject {
         recognitionTask = nil
         isRecording = false
         
-        // Ensure audio file is properly closed and flushed
         audioFileOutput = nil
         
-        // Add a small delay to ensure file is completely written
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             // This delay ensures the file is fully written before we try to process it
         }
     }
 
-    private var isProcessingSegments = false // Add flag to prevent multiple processing
+    private var isProcessingSegments = false
     
     func sliceWordsFromRecording() {
-        // Prevent multiple simultaneous processing
         guard !isProcessingSegments else {
             print("⚠️ Already processing segments, skipping duplicate call")
             return
@@ -156,7 +211,6 @@ class speechRecognitionManager: NSObject, ObservableObject {
             return
         }
         
-        // Check if audio file exists and has content
         do {
             let fileAttributes = try FileManager.default.attributesOfItem(atPath: audioURL.path)
             let fileSize = fileAttributes[.size] as? Int64 ?? 0
@@ -175,7 +229,6 @@ class speechRecognitionManager: NSObject, ObservableObject {
 
         let asset = AVAsset(url: audioURL)
         
-        // Wait for the asset to load its duration
         Task {
             do {
                 let duration = try await asset.load(.duration)
@@ -196,9 +249,46 @@ class speechRecognitionManager: NSObject, ObservableObject {
         }
     }
     
-    private func processSegmentsWithDuration(segments: [SFTranscriptionSegment], asset: AVAsset, audioDuration: Double, wordSet: WordSet) {
+    func applySemanticMerging(to segments: [(start: Double, end: Double, word: String)]) -> [(start: Double, end: Double, word: String)] {
+        var finalSegments: [(start: Double, end: Double, word: String)] = []
+        var i = 0
+        
+        while i < segments.count {
+            let current = segments[i]
+            let next = i + 1 < segments.count ? segments[i + 1] : nil
+
+            // Merge 'ござい' + 'ます' → 'ございます'
+            if current.word == "ござい", let next = next, next.word == "ます" {
+                finalSegments.append((start: current.start, end: next.end, word: "ございます"))
+                i += 2
+            }
+
+            // Merge 'でき' + 'ますか' → 'できます' + 'か'
+            else if current.word == "でき", let next = next, next.word == "ますか" {
+                finalSegments.append((start: current.start, end: next.end, word: "できます"))
+                finalSegments.append((start: next.start, end: next.end, word: "か"))
+                i += 2
+            }
+
+            // Otherwise, keep as is
+            else {
+                finalSegments.append(current)
+                i += 1
+            }
+        }
+        
+        return finalSegments
+    }
+    
+    private func processSegmentsWithDuration(
+        segments: [SFTranscriptionSegment],
+        asset: AVAsset,
+        audioDuration: Double,
+        wordSet: WordSet
+    ) {
         let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
 
+        // STEP 1: Merge by timing
         var mergedSegments: [(start: Double, end: Double, word: String)] = []
         var currentStart = segments[0].timestamp
         var currentEnd = segments[0].timestamp + segments[0].duration
@@ -220,37 +310,36 @@ class speechRecognitionManager: NSObject, ObservableObject {
         }
         mergedSegments.append((start: currentStart, end: currentEnd, word: currentWord))
 
-        print("🔍 Merged Segments:")
-        for segment in mergedSegments {
+        // STEP 2: Apply semantic fixes
+        let finalSegments = applySemanticMerging(to: mergedSegments)
+
+        print("🔍 Final Segments:")
+        for segment in finalSegments {
             print("   - '\(segment.word)' from \(segment.start)s to \(segment.end)s")
         }
 
-        // **NEW: Validate timing makes sense**
-        let totalRecognizedDuration = mergedSegments.reduce(0.0) { $0 + ($1.end - $1.start) }
+        // STEP 3: Timing validation
+        let totalRecognizedDuration = finalSegments.reduce(0.0) { $0 + ($1.end - $1.start) }
         let timingRatio = totalRecognizedDuration / audioDuration
-        
+
         print("🔍 Timing validation: recognized=\(totalRecognizedDuration)s, audio=\(audioDuration)s, ratio=\(timingRatio)")
-        
-        if timingRatio < 0.1 { // If recognized timing is less than 10% of audio duration
+
+        if timingRatio < 0.1 {
             print("⚠️ Speech recognition timing seems incorrect. Using fallback strategy.")
-            useFallbackTiming(mergedSegments: mergedSegments, asset: asset, docs: docs, audioDuration: audioDuration, wordSet: wordSet)
+            useFallbackTiming(mergedSegments: finalSegments, asset: asset, docs: docs, audioDuration: audioDuration, wordSet: wordSet)
         } else {
-            // NEW: Check if it's a combined phrase for the current word set
             let combinedPhrase = getCombinedPhrase(for: wordSet)
-            if mergedSegments.count == 1 && mergedSegments[0].word == combinedPhrase {
+            if finalSegments.count == 1 && finalSegments[0].word == combinedPhrase {
                 print("🎯 Detected full combined phrase for current word set, splitting into individual words")
-                splitCombinedPhraseByNaturalPattern(mergedSegments[0], asset: asset, docs: docs, audioDuration: audioDuration, wordSet: wordSet)
+                splitCombinedPhraseByNaturalPattern(finalSegments[0], asset: asset, docs: docs, audioDuration: audioDuration, wordSet: wordSet)
             } else {
-                // Handle normal segmented words
-                processSegments(mergedSegments, asset: asset, docs: docs, audioDuration: audioDuration)
+                processSegments(finalSegments, asset: asset, docs: docs, audioDuration: audioDuration)
             }
         }
-        
-        // Reset the processing flag
+
         isProcessingSegments = false
     }
     
-    // NEW: Get combined phrase for a word set
     private func getCombinedPhrase(for wordSet: WordSet) -> String {
         return wordSet.nihongo.joined(separator: "")
             .replacingOccurrences(of: ".", with: "")
@@ -259,11 +348,9 @@ class speechRecognitionManager: NSObject, ObservableObject {
     }
 
     private func useFallbackTiming(mergedSegments: [(start: Double, end: Double, word: String)], asset: AVAsset, docs: URL, audioDuration: Double, wordSet: WordSet) {
-        // Use the full audio duration and split it evenly based on recognized words
         let combinedPhrase = getCombinedPhrase(for: wordSet)
         
         if mergedSegments.count == 1 && mergedSegments[0].word == combinedPhrase {
-            // Split the full audio into equal parts based on word count
             let targetWords = getCleanWords(from: wordSet)
             let wordDuration = audioDuration / Double(targetWords.count)
             
@@ -281,7 +368,6 @@ class speechRecognitionManager: NSObject, ObservableObject {
                 exportAndAnalyzeSegment(wordGroup, index: index, asset: asset, docs: docs, audioDuration: audioDuration)
             }
         } else {
-            // For multiple segments, distribute the audio duration evenly
             let segmentDuration = audioDuration / Double(mergedSegments.count)
             var correctedSegments: [(start: Double, end: Double, word: String)] = []
             
@@ -299,7 +385,6 @@ class speechRecognitionManager: NSObject, ObservableObject {
         }
     }
     
-    // NEW: Get clean words from word set (removing punctuation)
     private func getCleanWords(from wordSet: WordSet) -> [String] {
         return wordSet.nihongo.map { word in
             word.trimmingCharacters(in: CharacterSet(charactersIn: ".？?"))
@@ -322,11 +407,8 @@ class speechRecognitionManager: NSObject, ObservableObject {
         }
         
         let totalDuration = actualEnd - actualStart
-        
-        // NEW: Get natural speech percentages based on the current word set
         let wordsWithPercentage = getNaturalPercentages(for: wordSet)
         
-        // Verify percentages add up to 1.0
         let totalPercentage = wordsWithPercentage.reduce(0) { $0 + $1.percentage }
         print("🔍 Total percentage: \(totalPercentage)")
         
@@ -350,37 +432,32 @@ class speechRecognitionManager: NSObject, ObservableObject {
         }
     }
     
-    // NEW: Get natural percentages for different word sets
     private func getNaturalPercentages(for wordSet: WordSet) -> [(word: String, percentage: Double)] {
         let cleanWords = getCleanWords(from: wordSet)
         
-        // Define percentages for each word set
-        if cleanWords == ["すみません", "肉", "は", "入って", "います", "か"] {
-            // First word set percentages (Total: 3.4 seconds)
+        if cleanWords == wordSet1Words {
             return [
-                ("すみません", 0.35),    // 35% - 1.2s/3.4s - polite opening, emphasized
-                ("肉", 0.12),           // 12% - 0.4s/3.4s - important noun
-                ("は", 0.06),           // 6% - 0.2s/3.4s - particle
-                ("入って", 0.24),        // 24% - 0.8s/3.4s - verb, clear pronunciation
-                ("います", 0.18),        // 18% - 0.6s/3.4s - polite auxiliary
-                ("か", 0.06)            // 6% - 0.2s/3.4s - question particle
+                ("すみません", 0.35),
+                ("肉", 0.12),
+                ("は", 0.06),
+                ("入って", 0.24),
+                ("います", 0.18),
+                ("か", 0.06)
             ]
-        } else if cleanWords == ["ありがとう", "この", "チャーハン", "は", "エビ", "とか", "カニ", "入って", "います", "か"] {
-            // Second word set percentages (Total: 5.6 seconds)
+        } else if cleanWords == wordSet2Words {
             return [
-                ("ありがとう", 0.21),    // 21% - 1.2s/5.6s - polite greeting
-                ("この", 0.07),         // 7% - 0.4s/5.6s - demonstrative
-                ("チャーハン", 0.18),    // 18% - 1.0s/5.6s - main noun
-                ("は", 0.04),           // 4% - 0.2s/5.6s - particle
-                ("エビ", 0.07),         // 7% - 0.4s/5.6s - allergen word
-                ("とか", 0.07),         // 7% - 0.4s/5.6s - conjunction
-                ("カニ", 0.07),         // 7% - 0.4s/5.6s - allergen word
-                ("入って", 0.14),        // 14% - 0.8s/5.6s - verb form
-                ("います", 0.11),        // 11% - 0.6s/5.6s - polite auxiliary
-                ("か", 0.04)            // 4% - 0.2s/5.6s - question particle
+                ("ありがとう", 0.21),
+                ("この", 0.07),
+                ("チャーハン", 0.18),
+                ("は", 0.04),
+                ("エビ", 0.07),
+                ("とか", 0.07),
+                ("カニ", 0.07),
+                ("入って", 0.14),
+                ("います", 0.11),
+                ("か", 0.04)
             ]
         } else {
-            // Fallback: equal distribution
             let equalPercentage = 1.0 / Double(cleanWords.count)
             return cleanWords.map { word in
                 (word: word, percentage: equalPercentage)
@@ -388,9 +465,7 @@ class speechRecognitionManager: NSObject, ObservableObject {
         }
     }
 
-    
     private func processSegments(_ segments: [(start: Double, end: Double, word: String)], asset: AVAsset, docs: URL, audioDuration: Double) {
-        // Set pending analysis count
         pendingAnalysisCount = segments.count
         
         for (index, wordGroup) in segments.enumerated() {
@@ -417,11 +492,9 @@ class speechRecognitionManager: NSObject, ObservableObject {
         let durationCM = CMTime(seconds: duration, preferredTimescale: 600)
         let timeRange = CMTimeRange(start: startCM, duration: durationCM)
 
-        // Clean up the filename to avoid issues
         let cleanWord = wordGroup.word.replacingOccurrences(of: "/", with: "_")
         let outputURL = docs.appendingPathComponent("word_\(index)_\(cleanWord).m4a")
         
-        // Remove existing file if it exists
         try? FileManager.default.removeItem(at: outputURL)
         
         guard let exportSession = AVAssetExportSession(asset: asset, presetName: AVAssetExportPresetAppleM4A) else {
@@ -458,13 +531,11 @@ class speechRecognitionManager: NSObject, ObservableObject {
     func analyzeAudio(at url: URL, for word: String) {
         print("🎯 Starting analysis for: '\(word)'")
         do {
-            let model = try KataKita_V0(configuration: MLModelConfiguration()).model
+            let model = try KataKita07(configuration: MLModelConfiguration()).model
             let request = try SNClassifySoundRequest(mlModel: model)
             
             let analyzer = try SNAudioFileAnalyzer(url: url)
-            
-            // Store word context for later use
-            analyzer.accessibilityHint = word // Using this to pass word info
+            analyzer.accessibilityHint = word
             
             try analyzer.add(request, withObserver: self)
             analyzer.analyze()
@@ -486,16 +557,36 @@ class speechRecognitionManager: NSObject, ObservableObject {
         }
     }
     
+    // MODIFIED: Calculate overall score and update appropriate word set
     private func calculateOverallScore() {
-        guard let wordSet = currentWordSet else {
-            print("⚠️ No current word set available for scoring")
+        print("🔍 Starting calculateOverallScore")
+        print("🔍 Current word set: \(currentWordSet != nil ? "exists" : "nil")")
+        
+        // First, try to determine word set from the scores themselves
+        var wordSetId: Int?
+        
+        if let forcedId = currentWordSetId {
+            wordSetId = forcedId
+            print("✅ Using explicitly set wordSetId: \(forcedId)")
+        }
+
+        // Fallback: Try to determine from the scores
+        if wordSetId == nil {
+            wordSetId = determineWordSetFromScores()
+            print("🔍 Word set ID from scores: \(wordSetId ?? -1)")
+        }
+        
+        guard let finalWordSetId = wordSetId else {
+            print("⚠️ Could not determine word set for scoring")
             overallScore = 0.0
             return
         }
         
-        let targetWords = getCleanWords(from: wordSet)
+        let targetWords = getTargetWordsForWordSet(finalWordSetId)
         var totalScore = 0.0
         var scoreCount = 0
+        
+        print("🔍 Target words for word set \(finalWordSetId): \(targetWords)")
         
         for word in targetWords {
             if let score = pronunciationScores[word] {
@@ -505,22 +596,67 @@ class speechRecognitionManager: NSObject, ObservableObject {
             }
         }
         
+        var calculatedScore: Double = 0.0
+        
         if scoreCount > 0 {
-            overallScore = totalScore / Double(scoreCount)
-        } else {
-            // Fallback: if no individual word scores, try any available scores
-            if !pronunciationScores.isEmpty {
-                let allScores = Array(pronunciationScores.values)
-                overallScore = allScores.reduce(0, +) / Double(allScores.count)
-                print("📊 Using fallback scoring from available scores")
-            } else {
-                overallScore = 0.0
-                print("⚠️ No scores available for calculation")
-            }
+            calculatedScore = totalScore / Double(scoreCount)
+        } else if !pronunciationScores.isEmpty {
+            let allScores = Array(pronunciationScores.values)
+            calculatedScore = allScores.reduce(0, +) / Double(allScores.count)
+            print("📊 Using fallback scoring from available scores")
         }
+        
+        // Update the appropriate word set scores
+        switch finalWordSetId {
+        case 1:
+            wordSet1Scores = pronunciationScores
+            wordSet1OverallScore = calculatedScore
+            print("📊 Word Set 1 Final Score: \(Int(wordSet1OverallScore * 100))%")
+        case 2:
+            wordSet2Scores = pronunciationScores
+            wordSet2OverallScore = calculatedScore
+            print("📊 Word Set 2 Final Score: \(Int(wordSet2OverallScore * 100))%")
+        default:
+            print("⚠️ Unknown word set ID: \(finalWordSetId)")
+        }
+        
+        // Keep backward compatibility
+        overallScore = calculatedScore
         
         DispatchQueue.main.async {
             print("📊 Final Overall Score: \(Int(self.overallScore * 100))%")
+        }
+    }
+    
+    // NEW: Determine word set from the scores we have
+    private func determineWordSetFromScores() -> Int? {
+        let scoreKeys = Set(pronunciationScores.keys)
+        let wordSet1Keys = Set(wordSet1Words)
+        let wordSet2Keys = Set(wordSet2Words)
+        
+        let overlap1 = scoreKeys.intersection(wordSet1Keys).count
+        let overlap2 = scoreKeys.intersection(wordSet2Keys).count
+        
+        print("🔍 Score overlap - WordSet1: \(overlap1), WordSet2: \(overlap2)")
+        
+        if overlap1 > overlap2 {
+            return 1
+        } else if overlap2 > overlap1 {
+            return 2
+        } else if overlap1 > 0 {
+            // If equal overlap, prefer word set 1
+            return 1
+        }
+        
+        return nil
+    }
+    
+    // NEW: Get target words for specific word set
+    func getTargetWordsForWordSet(_ id: Int) -> [String] {
+        switch id {
+        case 1: return wordSets[0].nihongo.map { $0.trimmingCharacters(in: .punctuationCharacters) }
+        case 2: return wordSets[1].nihongo.map { $0.trimmingCharacters(in: .punctuationCharacters) }
+        default: return []
         }
     }
 }
@@ -535,13 +671,10 @@ extension speechRecognitionManager: SNResultsObserving {
         
         print("🎧 ML Result: \(identifier) - Confidence: \(Int(confidence * 100))%")
         
-        // NEW: Map ML model output to Japanese words (expanded for both word sets)
         var targetWord: String?
-        
-        // Convert to lowercase for case-insensitive comparison
         let lowerIdentifier = identifier.lowercased()
         
-        // First sentence
+        // First sentence mappings
         if lowerIdentifier.contains("sumimasen") || lowerIdentifier.contains("すみません") {
             targetWord = "すみません"
         } else if lowerIdentifier.contains("niku") || lowerIdentifier.contains("肉") {
@@ -553,8 +686,7 @@ extension speechRecognitionManager: SNResultsObserving {
         } else if lowerIdentifier.contains("imasu") || lowerIdentifier.contains("います") {
             targetWord = "います"
         }
-        
-        // second sentence
+        // Second sentence mappings
         else if lowerIdentifier.contains("arigatou") || lowerIdentifier.contains("ありがとう") {
             targetWord = "ありがとう"
         } else if lowerIdentifier.contains("gozaimasu") || lowerIdentifier.contains("ございます") {
@@ -569,25 +701,30 @@ extension speechRecognitionManager: SNResultsObserving {
             targetWord = "できます"
         } else if lowerIdentifier.contains("ka") || lowerIdentifier.contains("か") {
             targetWord = "か"
+        } else if lowerIdentifier.contains("kono") || lowerIdentifier.contains("この") {
+            targetWord = "この"
+        } else if lowerIdentifier.contains("chaahan") || lowerIdentifier.contains("チャーハン") {
+            targetWord = "チャーハン"
+        } else if lowerIdentifier.contains("toka") || lowerIdentifier.contains("とか") {
+            targetWord = "とか"
+        } else if lowerIdentifier.contains("kani") || lowerIdentifier.contains("カニ") {
+            targetWord = "カニ"
         }
-        // NEW: Second word set mappings
         
         if let word = targetWord {
             DispatchQueue.main.async {
-                // More explicit check: only update if word doesn't exist OR has a lower confidence
                 let existingScore = self.pronunciationScores[word]
                 
-                if existingScore == nil {
-                    // First detection for this word
+                if let existing = self.pronunciationScores[word] {
+                    if confidence > existing {
+                        print("📈 Updating score for \(word): \(Int(existing * 100))% → \(Int(confidence * 100))%")
+                        self.pronunciationScores[word] = confidence
+                    } else {
+                        print("⚠️ Word '\(word)' already detected with score: \(Int(existing * 100))%, current: \(Int(confidence * 100))% - ignoring")
+                    }
+                } else {
                     self.pronunciationScores[word] = confidence
                     print("✅ First detection - Score for \(word): \(Int(confidence * 100))%")
-                } else if confidence > existingScore! {
-                    // Only update if new confidence is higher (optional enhancement)
-                    print("📈 Higher confidence found for \(word): \(Int(confidence * 100))% vs \(Int(existingScore! * 100))%")
-                    // Uncomment the line below if you want to allow updates with higher confidence
-                    // self.pronunciationScores[word] = confidence
-                } else {
-                    print("⚠️ Word '\(word)' already detected with score: \(Int(existingScore! * 100))%, current: \(Int(confidence * 100))% - ignoring")
                 }
             }
         } else {
