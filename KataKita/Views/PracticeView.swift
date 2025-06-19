@@ -192,6 +192,7 @@ struct PracticeView: View {
                             // Handle completion - maybe navigate to next screen
                             nextButton = false
                             step += 1
+                            FeedbackView(feedbackType: .positive)
                         }) {
                             Text("Finish")
                                 .font(.title2)
