@@ -16,14 +16,14 @@ struct WordSet {
 // Sample data
 let wordSets: [WordSet] = [
     WordSet(
-        romaji: ["Sumimasen", "niku", "chaahan", "wa", "ebi", "toka", "kani", "haitte", "imasu", "ka?"],
-        nihongo: ["すみません", "この", "チャーハン", "は", "エビ", "とか", "カニ", "入って", "います", "か"],
-        english: "🇬🇧: Excuse me, does this contain meat?"
+        romaji: ["Sumimasen", "niku", "chaahan", "wa", "butaniku", "toka", "arukoru", "haitte", "imasu", "ka?"],
+        nihongo: ["すみません", "この", "チャーハン", "は", "豚肉", "とか", "アルコール", "入って", "います", "か"],
+        english: "🇬🇧: Excuse me, does this fried rice have pork or alcohol in it?"
     ),
     WordSet(
-        romaji: ["Arigatou", "gozaimasu.", "Ebi", "nuki", "tte", "dekimasu", "ka?"],
-        nihongo: ["ありがとう", "ございます.", "エビ", "抜き", "って", "できます", "か?"],
-        english: "🇬🇧: Excuse me, does this food contain pork and alcohol?"
+        romaji: ["Arigatou", "gozaimasu.", "butaniku", "nuki", "tte", "dekimasu", "ka?"],
+        nihongo: ["ありがとう", "ございます.", "豚肉", "抜き", "って", "できます", "か?"],
+        english: "🇬🇧: Thank you. Can you leave the pork out?"
     )
 ]
 
@@ -33,6 +33,7 @@ struct WordNodes: View {
     @State private var showButton = true
     @Binding var nextButton: Bool
     @Binding var step: Int
+    @Binding var score: Double
     
     private func handleScoreChange(_ newScore: Double) {
         print("📊 Overall score changed to: \(newScore), Step: \(step), Current nextButton: \(nextButton)")
@@ -134,11 +135,13 @@ struct WordNodes: View {
         .onChange(of: speechManager.wordSet1OverallScore) { newScore in
             if step == 1 {
                 handleScoreChange(newScore)
+                score = newScore
             }
         }
         .onChange(of: speechManager.wordSet2OverallScore) { newScore in
             if step == 3 {
                 handleScoreChange(newScore)
+                score = newScore
             }
         }
 
@@ -161,9 +164,9 @@ struct WordNodes: View {
     }
 }
 
-#Preview {
-    WordNodes(nextButton: .constant(true), step: .constant(0))
-}
+//#Preview {
+//    WordNodes(nextButton: .constant(true), step: .constant(0))
+//}
 
 //struct WordNodes: View {
 //    @StateObject private var speechManager = speechRecognitionManager()

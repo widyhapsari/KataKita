@@ -12,7 +12,7 @@ struct Feedback: View {
     
     var body: some View {
         VStack(spacing: 10) {
-            Text("Conversation #1: Say Your Allergies")
+            Text("Conversation #1: Order Halal Food")
                 .font(.subheadline)
                 .bold()
                 .foregroundColor(.gray)

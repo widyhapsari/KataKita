@@ -12,6 +12,8 @@ struct PracticeView: View {
     @State private var navigateToNext = false
     @State private var step = 0
     @State var nextButton: Bool = false // Added explicit default value
+    @State private var score: Double = 0.0
+
     var value: Double {
         return 1/3
     }
@@ -68,7 +70,7 @@ struct PracticeView: View {
                         VStack {
                             Spacer() // Only pushes WordNodes
                             VStack {
-                                WordNodes(nextButton: $nextButton, step: $step)
+                                WordNodes(nextButton: $nextButton, step: $step, score: $score)
                             }
                             .frame(maxWidth: .infinity, maxHeight: 300)
                             .background(.white)
@@ -128,7 +130,7 @@ struct PracticeView: View {
                         VStack {
                             Spacer()
                             VStack {
-                                WordNodes(nextButton: $nextButton, step: $step)
+                                WordNodes(nextButton: $nextButton, step: $step, score: $score)
                             }
                             .frame(maxWidth: .infinity, maxHeight: 300)
                             .background(.white)
@@ -160,17 +162,17 @@ struct PracticeView: View {
                             nextButton = false // Reset for next interaction
                             step += 1
                         }) {
-                            Text("Next")
-                                .font(.title2)
-                                .foregroundStyle(.black)
-                                .padding()
-                                .frame(maxWidth: .infinity, alignment: .bottom)
-                                .background(
-                                    Image("sign")
+//                            Text("Next")
+//                                .font(.title2)
+//                                .foregroundStyle(.black)
+//                                .padding()
+//                                .frame(maxWidth: .infinity, alignment: .bottom)
+//                                .background(
+                                    Image("next")
                                         .resizable()
                                         .aspectRatio(contentMode: .fit)
                                         .frame(maxHeight: 60)
-                                )
+//                                )
                         }
                         .padding(.bottom, 42)
                     }
@@ -192,7 +194,7 @@ struct PracticeView: View {
                     Spacer()
                     
                     if nextButton {
-                        NavigationLink(destination: FeedbackView(feedbackType: .positive), isActive: $navigateToNext) {
+                        NavigationLink(destination: FeedbackView(score: score), isActive: $navigateToNext) {
                             Button(action: {
                                 print("🎯 Final Next button tapped at step \(step)")
                                 // Handle completion - maybe navigate to next screen
@@ -200,13 +202,14 @@ struct PracticeView: View {
                                 step += 1
                                 navigateToNext = true
                             }) {
-                                Text("Finish")
+                                Text("FINISH")
                                     .font(.title2)
+                                    .bold()
                                     .foregroundStyle(.black)
                                     .padding()
                                     .frame(maxWidth: .infinity, alignment: .bottom)
                                     .background(
-                                        Image("sign")
+                                        Image("Sign")
                                             .resizable()
                                             .aspectRatio(contentMode: .fit)
                                             .frame(maxHeight: 60)

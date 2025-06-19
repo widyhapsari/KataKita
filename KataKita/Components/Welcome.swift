@@ -10,7 +10,7 @@ import SwiftUI
 struct Welcome: View {
     var body: some View {
         ZStack {
-            Image("sign")
+            Image("signSecondary")
                 .resizable()
                 .frame(width: 360, height: 180)
             
@@ -25,7 +25,7 @@ struct Welcome: View {
 
                 Text("Let’s practice real-life conversations!")
                     .font(.subheadline)
-                    .foregroundColor(.gray)
+                    .foregroundColor(.black)
             }
         }
     }
