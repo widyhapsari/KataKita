@@ -30,6 +30,7 @@ let wordSets: [WordSet] = [
 struct WordNodes: View {
     @StateObject private var speechManager = speechRecognitionManager()
     @StateObject private var viewModel = QuizViewModel()
+    @ObservedObject private var audioModel: WelcomeViewModel = WelcomeViewModel()
     @State private var showButton = true
     @Binding var nextButton: Bool
     @Binding var step: Int
@@ -119,9 +120,13 @@ struct WordNodes: View {
                                 .aspectRatio(contentMode: .fit)
                                 .frame(maxHeight: 60)
                         )
+                        .onAppear {
+                            audioModel.playAudio(named: "staffline4.mp3")
+                        }
                 }
                 .padding(.bottom, 42)
                 .frame(maxWidth: .infinity, maxHeight: 80)
+                
             }
         }
         .padding()
@@ -164,9 +169,9 @@ struct WordNodes: View {
     }
 }
 
-//#Preview {
-//    WordNodes(nextButton: .constant(true), step: .constant(0))
-//}
+#Preview {
+    WordNodes(nextButton: .constant(false), step: .constant(5), score: .constant(0.3))
+}
 
 //struct WordNodes: View {
 //    @StateObject private var speechManager = speechRecognitionManager()
