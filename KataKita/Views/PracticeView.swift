@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct PracticeView: View {
+    @State private var navigateToNext = false
     @State private var step = 0
     @State var nextButton: Bool = false // Added explicit default value
     var value: Double {
@@ -187,26 +188,28 @@ struct PracticeView: View {
                     Spacer()
                     
                     if nextButton {
-                        Button(action: {
-                            print("🎯 Final Next button tapped at step \(step)")
-                            // Handle completion - maybe navigate to next screen
-                            nextButton = false
-                            step += 1
-                            FeedbackView(feedbackType: .positive)
-                        }) {
-                            Text("Finish")
-                                .font(.title2)
-                                .foregroundStyle(.black)
-                                .padding()
-                                .frame(maxWidth: .infinity, alignment: .bottom)
-                                .background(
-                                    Image("sign")
-                                        .resizable()
-                                        .aspectRatio(contentMode: .fit)
-                                        .frame(maxHeight: 60)
-                                )
+                        NavigationLink(destination: FeedbackView(feedbackType: .positive), isActive: $navigateToNext) {
+                            Button(action: {
+                                print("🎯 Final Next button tapped at step \(step)")
+                                // Handle completion - maybe navigate to next screen
+                                nextButton = false
+                                step += 1
+                                navigateToNext = true
+                            }) {
+                                Text("Finish")
+                                    .font(.title2)
+                                    .foregroundStyle(.black)
+                                    .padding()
+                                    .frame(maxWidth: .infinity, alignment: .bottom)
+                                    .background(
+                                        Image("sign")
+                                            .resizable()
+                                            .aspectRatio(contentMode: .fit)
+                                            .frame(maxHeight: 60)
+                                    )
+                            }
+                            .padding(.bottom, 42)
                         }
-                        .padding(.bottom, 42)
                     }
                 }
             }

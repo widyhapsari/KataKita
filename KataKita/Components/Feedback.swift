@@ -39,5 +39,5 @@ struct Feedback: View {
 
 
 #Preview {
-    Feedback(feedbackType: .negative)
+    Feedback(feedbackType: .positive)
 }
