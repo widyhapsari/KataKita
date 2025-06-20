@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct FeedbackView: View {
+    @ObservedObject var viewModel: WelcomeViewModel = .init()
+    
     var score: Double
     
     var feedbackType: FeedbackType {
@@ -61,7 +63,7 @@ struct FeedbackView: View {
                 Spacer() .frame(height: 10)
                 HStack {
                     NavigationLink {
-//                        PracticeView(nextButton: false)
+                        PracticeView(nextButton: false)
                     } label: {
                         Text("RETRY")
                             .font(.title2)
@@ -89,7 +91,7 @@ struct FeedbackView: View {
                             .padding()
                             .frame(maxWidth: .infinity, alignment: .bottom)
                             .background(
-                                Image("sign")
+                                Image("signSecondary")
                                     .resizable()
                                     .aspectRatio(contentMode: .fit)
                                     .frame(maxHeight: 60)
@@ -104,8 +106,8 @@ struct FeedbackView: View {
 }
 
 
-//#Preview {
-//    NavigationStack {
-//        FeedbackView(feedbackType: )
-//    }
-//}
+#Preview {
+    NavigationStack {
+        FeedbackView(score: 90)
+    }
+}
