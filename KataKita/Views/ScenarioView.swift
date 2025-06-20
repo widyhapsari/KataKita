@@ -22,7 +22,6 @@ struct ScenarioView: View {
                 .aspectRatio(contentMode: .fit)
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
                 .ignoresSafeArea()
-            
             VStack {
                 ZStack {
                     Image("restaurant")
@@ -33,10 +32,36 @@ struct ScenarioView: View {
                     Image("waiter")
                         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
                 }
-                
-                Guide(currentPage: $currentPage, overallPages: 3)
-                    .padding(.horizontal)
+                ZStack {
+                    Guide(currentPage: $currentPage, overallPages: 3)
+                        .padding(.horizontal)
+                    
+                    Image("kero")
+                        .resizable()
+                        .frame(maxWidth: 125, maxHeight: 100, alignment: .bottomLeading)
+                        .offset(x: -120, y: 150)
+                        .aspectRatio(contentMode: .fit)
+                }
             }
+            
+            if currentPage == 1 {
+                ZStack {
+                    Color.black.opacity(0.4)
+                        .ignoresSafeArea()
+                        .transition(.opacity)
+                    
+                    Guide(currentPage: $currentPage, overallPages: 3)
+                        .padding(.horizontal)
+                        .offset(y: 240)
+                    
+                    HStack {
+                        Image("nopork")
+                        Spacer().frame(width: 30)
+                        Image("noalcohol")
+                    }.offset(y: 40)
+                }
+                        }
+            
         }
         .navigationTitle("Conversation 1")
         .navigationBarTitleDisplayMode(.inline)

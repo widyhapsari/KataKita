@@ -8,7 +8,15 @@
 import SwiftUI
 
 struct FeedbackView: View {
-    var feedbackType: FeedbackType
+    var score: Double
+    
+    var feedbackType: FeedbackType {
+        feedbackType(for: score)
+    }
+    
+    func feedbackType(for score: Double) -> FeedbackType {
+        return score >= 0.8 ? .positive : .negative
+    }
     
     var body: some View {
         ZStack {
@@ -52,9 +60,9 @@ struct FeedbackView: View {
                     .fixedSize(horizontal: false, vertical: true)
                 Spacer() .frame(height: 10)
                 HStack {
-                    Button(action: {
-                        PracticeView(nextButton: false)
-                    }) {
+                    NavigationLink {
+//                        PracticeView(nextButton: false)
+                    } label: {
                         Text("RETRY")
                             .font(.title2)
                             .fontWeight(.bold)
@@ -68,10 +76,12 @@ struct FeedbackView: View {
                                     .frame(maxHeight: 60)
                             )
                     }
+                    
                     Spacer()
-                    Button(action: {
+                    
+                    NavigationLink {
                         WelcomeView()
-                    }) {
+                    } label: {
                         Text("HOME")
                             .font(.title2)
                             .fontWeight(.bold)
@@ -89,12 +99,13 @@ struct FeedbackView: View {
             }
             .padding()
         }
+        .navigationBarBackButtonHidden(true)
     }
 }
 
 
-#Preview {
-    NavigationStack {
-        FeedbackView(feedbackType: .positive)
-    }
-}
+//#Preview {
+//    NavigationStack {
+//        FeedbackView(feedbackType: )
+//    }
+//}

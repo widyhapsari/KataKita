@@ -13,7 +13,7 @@ struct Guide: View {
     let overallPages: Int
     
     let words: [String] = [
-        "You're at a restaurant in Japan. You want to make sure your meal doesn't contain shrimp and crab.",
+        "You're at a restaurant in Japan. You want to make sure your meal doesn't contain pork or alcohol.",
         "Before ordering, you're about to ask the restaurant staff politely and clearly about the ingredients.",
         "Now, practice how you would say it in Japanese! Find out how well you nailed the pronunciation."
     ]
@@ -27,6 +27,7 @@ struct Guide: View {
                 .font(.callout)
                 .multilineTextAlignment(.center)
                 .padding()
+                .bold()
             
             HStack {
                 Button {
@@ -34,17 +35,11 @@ struct Guide: View {
                         currentPage = currentPage - 1
                     }
                 } label: {
-                    Text("Prev")
-                        .font(.title2)
-                        .foregroundStyle(.black)
+                    Image("back")
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
                         .padding()
                         .frame(maxWidth: .infinity, alignment: .bottom)
-                        .background(
-                            Image("sign")
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .frame(maxHeight: 60)
-                        )
                 }
                 .disabled(currentPage == 1 ? true : false)
                 
@@ -52,17 +47,11 @@ struct Guide: View {
                     NavigationLink {
                         PracticeView(nextButton: false)
                     } label: {
-                        Text(currentPage == overallPages ? "Ready!" :"Next")
-                            .font(.title2)
-                            .foregroundStyle(.black)
+                        Image(currentPage == overallPages ? "ready" :"next")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
                             .padding()
                             .frame(maxWidth: .infinity, alignment: .bottom)
-                            .background(
-                                Image("sign")
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fit)
-                                    .frame(maxHeight: 60)
-                            )
                     }
 
                 } else {
@@ -71,17 +60,11 @@ struct Guide: View {
                             currentPage = currentPage + 1
                         }
                     } label: {
-                        Text(currentPage == overallPages ? "Ready!" :"Next")
-                            .font(.title2)
-                            .foregroundStyle(.black)
+                        Image(currentPage == overallPages ? "ready" :"next")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
                             .padding()
                             .frame(maxWidth: .infinity, alignment: .bottom)
-                            .background(
-                                Image("sign")
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fit)
-                                    .frame(maxHeight: 60)
-                            )
                     }
                 }
             }
@@ -92,7 +75,7 @@ struct Guide: View {
 //            }, label: {
 //                HStack {
 //                    Image(systemName: "chevron.right")
-//                    
+//
 //                    Text("Ask staff now")
 //                }
 //                .padding()

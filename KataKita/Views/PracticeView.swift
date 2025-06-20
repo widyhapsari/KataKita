@@ -8,133 +8,139 @@
 import SwiftUI
 
 struct PracticeView: View {
+    @ObservedObject var viewModel: WelcomeViewModel = WelcomeViewModel()
     @State private var navigateToNext = false
     @State private var step = 0
     @State var nextButton: Bool = false // Added explicit default value
+    @State private var score: Double = 0.0
+
     var value: Double {
         return 1/3
     }
     
     var body: some View {
         ZStack {
-                if step == 0 {
-                    VStack {
-                        CustomProgressView(value: 0.25)
-                            .padding(.top, 42)
+            if step == 0 {
+                VStack {
+                    CustomProgressView(value: 0.25)
+                        .padding(.top, 42)
+                    
+                    ZStack {
+                        PracticeBG(waiter: "waiter1")
                         
-                        ZStack {
-                            PracticeBG(waiter: "waiter1")
-                            
-                            VStack {
-                                HStack {
-                                    Spacer()
-                                    
-                                    if let firstLine = staffLines.first {
-                                        ConversationBox(line: firstLine)
-                                    }
-                                }
+                        VStack {
+                            HStack {
                                 Spacer()
+                                
+                                if let firstLine = staffLines.first {
+                                    ConversationBox(line: firstLine)
+                                        .environmentObject(viewModel)
+                                }
                             }
-                            .padding(.top, 42)
-                            .padding(.horizontal, 36)
+                            Spacer()
                         }
-                    }
-                } else if step == 1 {
-                    VStack {
-                        CustomProgressView(value: 0.5)
-                            .padding(.top, 42)
-                        
-                        ZStack(alignment: .top) {
-                            PracticeBG(waiter: "waiter1") // background stays still
-
-                            // Top overlay
-                            VStack {
-                                HStack {
-                                    Spacer()
-                                    
-                                    if let firstLine = staffLines.first {
-                                        ConversationBox(line: firstLine)
-                                    }
-                                }
-                                .padding(.top, 42)
-                                .padding(.horizontal, 36)
-                            }
-                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-
-                            // Bottom overlay
-                            VStack {
-                                Spacer() // Only pushes WordNodes
-                                VStack {
-                                    WordNodes(nextButton: $nextButton, step: $step)
-                                }
-                                .frame(maxWidth: .infinity, maxHeight: 300)
-                                .background(.white)
-                                .cornerRadius(32)
-                                .padding(.bottom, 16)
-                            }
-                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
-                        }
-                    }
-                } else if step == 2 {
-                    VStack {
-                        CustomProgressView(value: 0.75)
-                            .padding(.top, 42)
-                        
-                        ZStack {
-                            PracticeBG(waiter: "waiter1")
-                            
-                            VStack {
-                                HStack {
-                                    Spacer()
-                                    
-                                    if let secondLine = staffLines.dropFirst().first {
-                                        ConversationBox(line: secondLine)
-                                    }
-                                }
-                                Spacer()
-                            }
-                            .padding(.top, 42)
-                            .padding(.horizontal, 36)
-                        }
-                    }
-                } else if step == 3 {
-                    VStack {
-                        CustomProgressView(value: 1)
-                            .padding(.top, 42)
-                        
-                        ZStack(alignment: .top) {
-                            PracticeBG(waiter: "waiter1") // background stays still
-
-                            // Top overlay
-                            VStack {
-                                HStack {
-                                    Spacer()
-                                    
-                                    if let firstLine = staffLines.dropFirst().first {
-                                        ConversationBox(line: firstLine)
-                                    }
-                                }
-                                .padding(.top, 42)
-                                .padding(.horizontal, 36)
-                            }
-                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-
-                            // Bottom overlay
-                            VStack {
-                                Spacer()
-                                VStack {
-                                    WordNodes(nextButton: $nextButton, step: $step)
-                                }
-                                .frame(maxWidth: .infinity, maxHeight: 300)
-                                .background(.white)
-                                .cornerRadius(32)
-                                .padding(.bottom, 16)
-                            }
-                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
-                        }
+                        .padding(.top, 42)
+                        .padding(.horizontal, 36)
                     }
                 }
-            
+            } else if step == 1 {
+                VStack {
+                    CustomProgressView(value: 0.5)
+                        .padding(.top, 42)
+                    
+                    ZStack(alignment: .top) {
+                        PracticeBG(waiter: "waiter1") // background stays still
+
+                        // Top overlay
+                        VStack {
+                            HStack {
+                                Spacer()
+                                
+                                if let firstLine = staffLines.first {
+                                    ConversationBox(line: firstLine)
+                                        .environmentObject(viewModel)
+                                }
+                            }
+                            .padding(.top, 42)
+                            .padding(.horizontal, 36)
+                        }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+
+                        // Bottom overlay
+                        VStack {
+                            Spacer() // Only pushes WordNodes
+                            VStack {
+                                WordNodes(nextButton: $nextButton, step: $step, score: $score)
+                            }
+                            .frame(maxWidth: .infinity, maxHeight: 300)
+                            .background(.white)
+                            .cornerRadius(32)
+                            .padding(.bottom, 16)
+                        }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+                    }
+                }
+            } else if step == 2 {
+                VStack {
+                    CustomProgressView(value: 0.75)
+                        .padding(.top, 42)
+                    
+                    ZStack {
+                        PracticeBG(waiter: "waiter1")
+                        
+                        VStack {
+                            HStack {
+                                Spacer()
+                                
+                                if let secondLine = staffLines.dropFirst().first {
+                                    ConversationBox(line: secondLine)
+                                        .environmentObject(viewModel)
+                                }
+                            }
+                            Spacer()
+                        }
+                        .padding(.top, 42)
+                        .padding(.horizontal, 36)
+                    }
+                }
+            } else if step == 3 {
+                VStack {
+                    CustomProgressView(value: 1)
+                        .padding(.top, 42)
+                    
+                    ZStack(alignment: .top) {
+                        PracticeBG(waiter: "waiter1") // background stays still
+
+                        // Top overlay
+                        VStack {
+                            HStack {
+                                Spacer()
+                                
+                                if let firstLine = staffLines.dropFirst().first {
+                                    ConversationBox(line: firstLine)
+                                        .environmentObject(viewModel)
+                                }
+                            }
+                            .padding(.top, 42)
+                            .padding(.horizontal, 36)
+                        }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+
+                        // Bottom overlay
+                        VStack {
+                            Spacer()
+                            VStack {
+                                WordNodes(nextButton: $nextButton, step: $step, score: $score)
+                            }
+                            .frame(maxWidth: .infinity, maxHeight: 300)
+                            .background(.white)
+                            .cornerRadius(32)
+                            .padding(.bottom, 16)
+                        }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+                    }
+                }
+            }
             
             if step == 0 {
                 VStack {
@@ -156,17 +162,17 @@ struct PracticeView: View {
                             nextButton = false // Reset for next interaction
                             step += 1
                         }) {
-                            Text("Next")
-                                .font(.title2)
-                                .foregroundStyle(.black)
-                                .padding()
-                                .frame(maxWidth: .infinity, alignment: .bottom)
-                                .background(
-                                    Image("sign")
+//                            Text("Next")
+//                                .font(.title2)
+//                                .foregroundStyle(.black)
+//                                .padding()
+//                                .frame(maxWidth: .infinity, alignment: .bottom)
+//                                .background(
+                                    Image("next")
                                         .resizable()
                                         .aspectRatio(contentMode: .fit)
                                         .frame(maxHeight: 60)
-                                )
+//                                )
                         }
                         .padding(.bottom, 42)
                     }
@@ -188,7 +194,7 @@ struct PracticeView: View {
                     Spacer()
                     
                     if nextButton {
-                        NavigationLink(destination: FeedbackView(feedbackType: .positive), isActive: $navigateToNext) {
+                        NavigationLink(destination: FeedbackView(score: score), isActive: $navigateToNext) {
                             Button(action: {
                                 print("🎯 Final Next button tapped at step \(step)")
                                 // Handle completion - maybe navigate to next screen
@@ -196,13 +202,14 @@ struct PracticeView: View {
                                 step += 1
                                 navigateToNext = true
                             }) {
-                                Text("Finish")
+                                Text("FINISH")
                                     .font(.title2)
+                                    .bold()
                                     .foregroundStyle(.black)
                                     .padding()
                                     .frame(maxWidth: .infinity, alignment: .bottom)
                                     .background(
-                                        Image("sign")
+                                        Image("Sign")
                                             .resizable()
                                             .aspectRatio(contentMode: .fit)
                                             .frame(maxHeight: 60)
@@ -231,7 +238,18 @@ struct PracticeView: View {
                 
             }
         }
-        .onChange(of: nextButton) { newValue in
+        .onChange(of: step) { newValue, _ in
+            print("🔄 Step changed to \(newValue)")
+            switch newValue {
+            case 0:
+                viewModel.playAudio(named: "staffline1.mp3")
+            case 3:
+                viewModel.playAudio(named: "staffline2.mp3")
+            default:
+                break
+            }
+        }
+        .onChange(of: nextButton) { newValue, oldValue in
             print("🔄 PracticeView: nextButton changed to \(newValue) at step \(step)")
         }
     }
@@ -240,6 +258,7 @@ struct PracticeView: View {
 #Preview {
     NavigationStack {
         PracticeView(nextButton: false)
+            .environmentObject(WelcomeViewModel())
     }
 }
 

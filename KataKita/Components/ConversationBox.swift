@@ -12,23 +12,27 @@ struct staffLine: Identifiable, Hashable {
     let staffRomaji: String
     let staffNihongo: String
     let staffEnglish: String
+    let staffAudio: String
 
-    init(id: UUID = UUID(), staffRomaji: String, staffNihongo: String, staffEnglish: String) {
+    init(id: UUID = UUID(), staffRomaji: String, staffNihongo: String, staffEnglish: String, staffAudio: String) {
         self.id = id
         self.staffRomaji = staffRomaji
         self.staffNihongo = staffNihongo
         self.staffEnglish = staffEnglish
+        self.staffAudio = staffAudio
     }
 }
 
 let staffLines: [staffLine] = [
-    staffLine(staffRomaji: "Kon'nichiwa. Nani o go chūmon sa remasu ka?", staffNihongo: "こんにちは。何をご注文されますか？", staffEnglish: "Hello, what would you like to order?"),
-    staffLine(staffRomaji: "Hai, ebi ga haitte orimasu ga, kani wa tsukatte orimasen.", staffNihongo: "はい、エビが入っておりますが、カニは使っておりません。", staffEnglish: "Yes, it contains shrimp, but we don’t use crab."),
-    staffLine(staffRomaji: "Kashikomarimashita, Shōshō omachi kudasai.", staffNihongo: "かしこまりました, 少々お待ちください。", staffEnglish: "Certainly, Please wait a moment."),
-    staffLine(staffRomaji: "Eh? Sumimasen, mō ichido ii desu ka?", staffNihongo: "えっ？すみません、もう一度いいですか？", staffEnglish: "Huh? Sorry, could you say that again?")
+    staffLine(staffRomaji: "Kon'nichiwa. Nani o go chūmon sa remasu ka?", staffNihongo: "こんにちは。何をご注文されますか？", staffEnglish: "Hello, what would you like to order?", staffAudio: "staffline1.mp3"),
+    staffLine(staffRomaji: "Hai, butaniku ga haitte orimasu ga, arukoru wa tsukatte orimasen.", staffNihongo: "はい、豚肉が入っておりますが、アルコールは使っておりません。", staffEnglish: "Yes, it contains pork, but we don’t use alcohol.", staffAudio: "staffline2.mp3"),
+    staffLine(staffRomaji: "Kashikomarimashita, Shōshō omachi kudasai.", staffNihongo: "かしこまりました, 少々お待ちください。", staffEnglish: "Certainly, Please wait a moment.", staffAudio: "staffline3.mp3"),
+    staffLine(staffRomaji: "Eh? Sumimasen, mō ichido ii desu ka?", staffNihongo: "えっ？すみません、もう一度いいですか？", staffEnglish: "Huh? Sorry, could you say that again?", staffAudio: "staffline4.mp3")
     ]
 
 struct ConversationBox: View {
+    @EnvironmentObject var viewModel: WelcomeViewModel
+    
     let line: staffLine
     
     var body: some View {
@@ -47,10 +51,16 @@ struct ConversationBox: View {
                     .frame(width: 26, height: 26)
                     .blur(radius: 3)
 
-                Image(systemName: "speaker.wave.2.circle.fill")
-                    .font(.system(size: 32))
-                    .foregroundColor(.white)
-                    .font(.system(size: 28))
+                Button {
+                    print(line.staffAudio)
+                    viewModel.playAudio(named: line.staffAudio)
+                } label: {
+                    Image(systemName: "speaker.wave.2.circle.fill")
+                        .font(.system(size: 32))
+                        .foregroundColor(.white)
+                        .font(.system(size: 28))
+                }
+
             }
             
             Text(line.staffEnglish)
@@ -65,7 +75,8 @@ struct ConversationBox: View {
 }
 
 #Preview {
-    ConversationBox(line: staffLines[0])
+    ConversationBox(line: staffLines[1])
+        .environmentObject(WelcomeViewModel())
 }
 
 extension View {
